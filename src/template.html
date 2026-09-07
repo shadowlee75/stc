@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STC AS/RS 시뮬레이터</title>
+<style>
+/* ================= Swiss — 계산서 조판 ================= */
+:root{
+  --paper:#ffffff; --paper2:#f7f7f8; --ink:#111111; --dim:#666a70; --muted:#898781;
+  --line:#dcdee1; --rule:#111111; --blue:#002FA7;
+  --ok:#0a7a3c; --warn:#a05c00; --err:#b3001b;
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html{background:var(--paper)}
+body{background:var(--paper); color:var(--ink); font-family:"Helvetica Neue",Helvetica,Arial,"Malgun Gothic","맑은 고딕",sans-serif; font-size:13px; line-height:1.5; -webkit-font-smoothing:antialiased}
+b,strong{font-weight:700}
+.num,td.n,th.n{font-variant-numeric:tabular-nums}
+a{color:var(--blue)}
+[hidden]{display:none!important}
+
+/* ---------- 표제 블록 ---------- */
+header.folio{border-bottom:2px solid var(--rule); padding:14px 20px 12px; display:flex; align-items:flex-end; gap:24px; flex-wrap:wrap}
+header .id h1{font-size:19px; font-weight:800; letter-spacing:-.01em}
+header .id .sub{font-size:11px; color:var(--dim); margin-top:2px}
+header .block{margin-left:auto; display:flex; border:1px solid var(--line); background:var(--line); gap:1px}
+header .block>div{background:var(--paper); padding:5px 12px; font-size:11px; min-width:110px}
+header .block .k{color:var(--dim); display:block; font-size:10px; text-transform:uppercase; letter-spacing:.06em}
+header .block .v{font-weight:700; white-space:nowrap; max-width:260px; overflow:hidden; text-overflow:ellipsis; display:block}
+header .block .v.ok{color:var(--ok)} header .block .v.ng{color:var(--err)}
+
+/* ---------- 탭 ---------- */
+nav.tabs{display:flex; flex-wrap:wrap; border-bottom:1px solid var(--rule); padding:0 20px; background:var(--paper); position:sticky; top:0; z-index:30}
+nav.tabs button{font:inherit; font-size:13px; font-weight:700; cursor:pointer; background:none; border:none; color:var(--dim); padding:10px 16px 8px; border-bottom:3px solid transparent}
+nav.tabs button:hover{color:var(--ink)}
+nav.tabs button.on{color:var(--blue); border-bottom-color:var(--blue)}
+nav.tabs button small{display:block; font-size:10px; font-weight:400; color:var(--muted); text-align:left}
+
+/* ---------- 패널·레이아웃 ---------- */
+.panel{display:none} .panel.on{display:block}
+.wrap{display:grid; grid-template-columns:minmax(420px,520px) minmax(0,1fr); align-items:start}
+.colIn{border-right:1px solid var(--line); padding-bottom:60px}
+.colOut{padding-bottom:60px; min-width:0}
+.colhead{font-size:10px; text-transform:uppercase; letter-spacing:.12em; color:var(--dim); padding:10px 20px 6px; border-bottom:1px solid var(--line)}
+.grp{padding:12px 20px; border-bottom:1px solid var(--line)}
+.grp h3{font-size:12px; font-weight:700; margin-bottom:8px; letter-spacing:-.01em}
+.grp h3 .dim{font-weight:400}
+.row{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:6px 0}
+.dim{color:var(--dim)} .muted{color:var(--muted)} .small{font-size:11px}
+@media (max-width:1080px){ .wrap{grid-template-columns:1fr} .colIn{border-right:none; border-bottom:1px solid var(--line)} }
+
+/* ---------- 폼 ---------- */
+.fgrid{display:grid; grid-template-columns:1fr 1fr; gap:6px 14px}
+.field{display:flex; flex-direction:column; gap:2px}
+.field label{font-size:11px; color:var(--dim)}
+.field label .u{color:var(--muted)}
+input[type=number],input[type=text],select,textarea{font:inherit; font-size:12.5px; color:var(--ink); background:var(--paper); border:1px solid var(--line); padding:5px 7px; border-radius:0; width:100%; font-variant-numeric:tabular-nums}
+input:focus,select:focus,textarea:focus{outline:none; border-color:var(--blue)}
+input[type=checkbox]{width:auto; margin-right:4px}
+textarea#jsonEd{width:100%; min-height:420px; font-family:Consolas,"Courier New",monospace; font-size:11.5px; line-height:1.4; white-space:pre; resize:vertical}
+.btn{font:inherit; font-size:12px; font-weight:700; cursor:pointer; border:1px solid var(--rule); background:var(--paper); color:var(--ink); padding:6px 14px; border-radius:0}
+.btn:hover{background:var(--paper2)}
+.btn.pri{background:var(--blue); border-color:var(--blue); color:#fff}
+.btn.pri:hover{background:#00238a}
+.btn.sm{padding:3px 9px; font-size:11px; font-weight:600}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+
+/* ---------- 표 ---------- */
+table.tbl{width:100%; border-collapse:collapse; font-size:12px}
+table.tbl th,table.tbl td{padding:5px 8px; border-bottom:1px solid var(--line); text-align:right; font-variant-numeric:tabular-nums; vertical-align:top}
+table.tbl th{font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--dim); font-weight:700; border-bottom:1px solid var(--rule)}
+table.tbl th.l,table.tbl td.l{text-align:left}
+table.tbl tr.best td{background:#eef2fb}
+table.tbl td.ok{color:var(--ok); font-weight:700} table.tbl td.ng{color:var(--err); font-weight:700}
+table.edit{width:100%; border-collapse:collapse; font-size:11.5px}
+table.edit th{font-size:10px; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; padding:2px 3px; text-align:left; border-bottom:1px solid var(--rule)}
+table.edit td{padding:2px 3px; border-bottom:1px solid var(--line)}
+table.edit input,table.edit select{padding:3px 4px; font-size:11.5px}
+.tblwrap{overflow-x:auto}
+
+/* ---------- 메시지 ---------- */
+.msgs div{padding:4px 8px; border-left:3px solid var(--line); margin:3px 0; font-size:12px; background:var(--paper2)}
+.msgs .err{border-color:var(--err); color:var(--err)}
+.msgs .warn{border-color:var(--warn); color:var(--warn)}
+.msgs .info{border-color:var(--blue); color:var(--dim)}
+.msgs .okm{border-color:var(--ok); color:var(--ok)}
+
+/* ---------- KPI ---------- */
+.kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); margin:0 20px 14px}
+.kpi{background:var(--paper); padding:10px 12px}
+.kpi .k{font-size:11px; color:var(--dim)}
+.kpi .v{font-size:22px; font-weight:700; letter-spacing:-.01em; margin-top:2px}
+.kpi .v small{font-size:11px; color:var(--dim); font-weight:400; margin-left:3px}
+.kpi.hero .v{font-size:36px; color:var(--blue)}
+.kpi .sub{font-size:11px; color:var(--muted)}
+.verdict{margin:0 20px 14px; padding:12px 16px; border:1px solid var(--rule); display:flex; gap:16px; align-items:flex-start}
+.verdict .badge{font-size:26px; font-weight:800; letter-spacing:-.02em; min-width:60px}
+.verdict.ok .badge{color:var(--ok)} .verdict.ng .badge{color:var(--err)}
+.verdict ul{margin-left:16px; font-size:12px}
+
+/* ---------- 차트 카드 ---------- */
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:14px; padding:0 20px 14px}
+.card{border:1px solid var(--line); padding:10px 12px 8px; min-width:0}
+.card h3{font-size:12px; font-weight:700; margin-bottom:4px}
+.card h3 .dim{font-weight:400; font-size:11px}
+.card canvas{display:block; width:100%}
+.card.wide{grid-column:1/-1}
+.legend{display:flex; flex-wrap:wrap; gap:4px 12px; font-size:11px; color:var(--dim); margin:2px 0 6px}
+.legend .lg i,.lg i{display:inline-block; width:10px; height:10px; margin-right:4px; vertical-align:-1px}
+.chart-tip{position:fixed; z-index:99; background:#fff; border:1px solid var(--rule); padding:6px 9px; font-size:11.5px; pointer-events:none; max-width:320px}
+.chart-tip .tt{font-weight:700; margin-bottom:2px}
+.chart-tip i{display:inline-block; width:9px; height:9px; margin-right:5px}
+
+/* ---------- 3D 애니메이션 ---------- */
+.animWrap{display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:0}
+.animMain{padding:14px 0 14px 20px; min-width:0}
+.viewport{position:relative; height:62vh; min-height:420px; border:1px solid var(--rule); background:#fff; overflow:hidden}
+.viewport::before,.viewport::after{content:""; position:absolute; width:14px; height:14px; pointer-events:none; z-index:2}
+.viewport::before{left:-1px; top:-1px; border-left:2px solid var(--blue); border-top:2px solid var(--blue)}
+.viewport::after{right:-1px; bottom:-1px; border-right:2px solid var(--blue); border-bottom:2px solid var(--blue)}
+.viewport .fig{position:absolute; left:10px; top:8px; font-size:11px; color:var(--dim); z-index:2; pointer-events:none}
+.viewport .fig b{color:var(--ink)}
+.animBar{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px}
+.animBar select{width:auto}
+.progress{height:4px; background:var(--paper2); border:1px solid var(--line); margin-top:10px; position:relative}
+.progress #progFill{position:absolute; left:0; top:0; bottom:0; width:0; background:var(--blue)}
+.progress #progWarm{position:absolute; left:0; top:0; bottom:0; width:0; background:repeating-linear-gradient(45deg,transparent 0 3px,#c9d2ee 3px 5px)}
+.animSide{border-left:1px solid var(--line); padding:14px 16px; font-size:12px; overflow:auto; max-height:calc(100vh - 100px)}
+.clock .k{font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--dim)}
+.clock .v{font-family:"Arial Narrow","Helvetica Neue Condensed",Roboto,Arial,sans-serif; font-stretch:condensed; font-size:54px; font-weight:700; line-height:1; color:var(--blue); letter-spacing:-.02em; margin:2px 0 4px}
+.side-kpis{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border:1px solid var(--line); margin:10px 0}
+.side-kpis div{background:var(--paper); padding:6px 8px}
+.side-kpis .k{font-size:10px; color:var(--dim)} .side-kpis .v{font-size:16px; font-weight:700}
+.leg{margin:10px 0}
+.leg div{display:flex; align-items:center; gap:6px; font-size:11.5px; margin:2px 0}
+.leg i{display:inline-block; width:12px; height:12px}
+.sideList{margin:8px 0} .sideList h4{font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--dim); margin:8px 0 4px}
+.sideList table{width:100%; font-size:11.5px; border-collapse:collapse}
+.sideList td{padding:2px 0; border-bottom:1px solid var(--line)} .sideList td.n{text-align:right; font-variant-numeric:tabular-nums}
+.sideList .dot{display:inline-block; width:9px; height:9px; margin-right:5px}
+.cellInfo{border:1px solid var(--line); padding:8px; font-size:11.5px; margin-top:8px}
+.cellInfo h4{font-size:11px; margin-bottom:4px}
+@media (max-width:1000px){ .animWrap{grid-template-columns:1fr} .animSide{border-left:none; border-top:1px solid var(--line); max-height:none} .animMain{padding-right:20px} }
+
+/* ---------- 실험·최적화 ---------- */
+.space{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:8px 18px; padding:8px 0}
+.space h4{font-size:11px; color:var(--dim); text-transform:uppercase; letter-spacing:.06em; margin-bottom:3px}
+.space label{display:block; font-size:12px; margin:1px 0}
+.pbar{height:6px; border:1px solid var(--line); background:var(--paper2); position:relative; margin:8px 0}
+.pbar div{position:absolute; left:0; top:0; bottom:0; width:0; background:var(--blue)}
+.status{font-size:12px; color:var(--dim); min-height:16px}
+.best{border:2px solid var(--blue); padding:12px 16px; margin:0 20px 14px; display:grid; grid-template-columns:auto 1fr; gap:6px 18px}
+.best .t{font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--blue); grid-column:1/-1}
+.best .big{font-size:30px; font-weight:800; color:var(--blue); letter-spacing:-.02em; line-height:1}
+.best .k{color:var(--dim); font-size:11px}
+.help{padding:16px 20px; max-width:900px; font-size:13px}
+.help h2{font-size:15px; margin:18px 0 6px; padding-bottom:4px; border-bottom:1px solid var(--rule)}
+.help table{border-collapse:collapse; width:100%; font-size:12px; margin:6px 0}
+.help th,.help td{border-bottom:1px solid var(--line); padding:4px 8px; text-align:left; vertical-align:top}
+.help th{font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--dim)}
+.help ul,.help ol{margin-left:18px}
+.section{padding:12px 20px; border-bottom:1px solid var(--line)}
+.section h2{font-size:13px; font-weight:700; margin-bottom:6px}
+.overlay{position:fixed; inset:0; background:rgba(17,17,17,.35); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px}
+.ovBox{background:var(--paper); border:1px solid var(--rule); width:min(900px,100%); max-height:90vh; display:flex; flex-direction:column; padding:12px}
+.ovBox textarea{flex:1; min-height:50vh; font-family:Consolas,"Courier New",monospace; font-size:11.5px; white-space:pre; margin-top:8px}
+</style>
+</head>
+<body>
+
+<header class="folio">
+  <div class="id">
+    <h1>STC AS/RS 시뮬레이터</h1>
+    <div class="sub">단일 통로 스태커크레인 이산사건 시뮬레이션 · 3D 애니메이션 · 실험기 · 최적화기 · FEM 9.851 해석식 대조</div>
+  </div>
+  <div class="block">
+    <div><span class="k">시나리오</span><span class="v" id="hdScenario">–</span></div>
+    <div><span class="k">판정 (단일 실행)</span><span class="v" id="hdVerdict">–</span></div>
+    <div><span class="k">배치 실행기</span><span class="v" id="hdRunner">감지 중</span></div>
+    <div><span class="k">빌드</span><span class="v" id="hdBuild">–</span></div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button data-tab="model" class="on">① 모델<small>시나리오 입력 · 검증</small></button>
+  <button data-tab="anim">② 3D 애니메이션<small>재생 · 배속 · 카메라</small></button>
+  <button data-tab="stats">③ 통계<small>KPI · 상태 · 시계열 · 분포</small></button>
+  <button data-tab="exp">④ 실험기<small>시나리오 × 반복 · 95% CI</small></button>
+  <button data-tab="opt">⑤ 최적화기<small>대수 · 조닝 · 디스패치 탐색</small></button>
+  <button data-tab="fem">⑥ 해석식<small>FEM 9.851 준용 vs 시뮬</small></button>
+  <button data-tab="help">⑦ 도움말<small>모델 가정 · KPI 정의</small></button>
+</nav>
+
+<main>
+<!-- ================= ① 모델 ================= -->
+<section id="tab-model" class="panel on">
+  <div class="wrap">
+    <div class="colIn">
+      <div class="colhead">입력</div>
+      <div class="grp">
+        <div class="row">
+          <label class="dim">프리셋</label>
+          <select id="presetSel" style="width:auto;min-width:220px"></select>
+          <button class="btn" id="btnPreset">불러오기</button>
+        </div>
+        <div class="row">
+          <button class="btn" id="btnLoad">JSON 열기</button>
+          <input type="file" id="fileLoad" accept=".json,application/json" hidden>
+          <button class="btn" id="btnSave">JSON 저장</button>
+          <button class="btn pri" id="btnRunSingle">단일 실행 → ③ 통계</button>
+        </div>
+        <div class="field"><label>시나리오 이름</label><input type="text" id="scName"></div>
+      </div>
+      <div id="form"></div>
+      <div class="grp">
+        <h3>스테이션 <span class="dim">— E/A, 도착 스트림</span></h3>
+        <div class="tblwrap"><table class="edit" id="stTable"></table></div>
+        <div class="row"><button class="btn sm" id="btnAddSt">스테이션 추가</button><span class="dim small">좌표 m · 도착률 건/h · takt 편차 % · minStock = 재고가 이 값 이상일 때만 출고 호출</span></div>
+      </div>
+      <div class="grp">
+        <h3>크레인·존 <span class="dim">— 크레인 1대 = 사각 존 1개(겹침 불가)</span></h3>
+        <div class="tblwrap"><table class="edit" id="crTable"></table></div>
+        <div class="row"><button class="btn sm" id="btnAddCr">크레인 추가</button><span class="dim small">home = SC-return 복귀 스테이션 · x0,y0 = 초기 위치</span></div>
+      </div>
+    </div>
+    <div class="colOut">
+      <div class="colhead">검증 · 시나리오 JSON (정본)</div>
+      <div class="grp">
+        <div id="valMsgs" class="msgs"></div>
+        <div class="tblwrap"><table class="tbl" id="balTable"></table></div>
+      </div>
+      <div class="grp">
+        <textarea id="jsonEd" spellcheck="false"></textarea>
+        <div class="row"><button class="btn pri" id="btnApplyJson">JSON 적용</button><span class="dim small">폼과 표의 편집은 JSON에 즉시 반영됩니다. 직접 편집한 뒤에는 "JSON 적용"을 누르세요.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ② 3D ================= -->
+<section id="tab-anim" class="panel">
+  <div class="animWrap">
+    <div class="animMain">
+      <div id="viewport" class="viewport"><div class="fig"><b>Fig. 1</b> 통로 입체 — 좌드래그 회전 · 우드래그/Shift 이동 · 휠 줌 · 셀 클릭 정보</div></div>
+      <div class="animBar">
+        <button class="btn pri" id="btnPlay">재생</button>
+        <button class="btn" id="btnPause">일시정지</button>
+        <button class="btn" id="btnStep">+1 min</button>
+        <button class="btn" id="btnReset">처음으로</button>
+        <label class="dim">배속 <select id="speedSel">
+          <option value="1">1×</option><option value="2">2×</option><option value="5">5×</option><option value="10">10×</option><option value="20">20×</option>
+          <option value="60" selected>60×</option><option value="120">120×</option><option value="300">300×</option><option value="600">600×</option><option value="1000">1000×</option>
+        </select></label>
+        <span class="camBtns">
+          <button class="btn sm" data-cam="iso">ISO</button><button class="btn sm" data-cam="front">정면</button>
+          <button class="btn sm" data-cam="top">평면</button><button class="btn sm" data-cam="side">측면</button>
+        </span>
+        <span class="dim small" id="animNote"></span>
+      </div>
+      <div class="progress"><div id="progWarm"></div><div id="progFill"></div></div>
+    </div>
+    <aside class="animSide">
+      <div class="clock"><div class="k">시뮬레이션 시각</div><div class="v" id="clock">0:00:00</div><div class="k" id="clockSub"></div></div>
+      <div class="side-kpis">
+        <div><div class="k">누적 입고 완료</div><div class="v" id="aIn">0</div></div>
+        <div><div class="k">누적 출고 완료</div><div class="v" id="aOut">0</div></div>
+        <div><div class="k">순간 물동량 (건/h)</div><div class="v" id="aRate">0</div></div>
+        <div><div class="k">재고 (점유/셀)</div><div class="v" id="aFill">0</div></div>
+      </div>
+      <div class="leg" id="stateLegend"></div>
+      <div class="sideList"><h4>크레인</h4><table id="craneList"></table></div>
+      <div class="sideList"><h4>스테이션 대기열</h4><table id="stationList"></table></div>
+      <div id="cellInfo" class="cellInfo" hidden></div>
+    </aside>
+  </div>
+</section>
+
+<!-- ================= ③ 통계 ================= -->
+<section id="tab-stats" class="panel">
+  <div class="section" id="statsEmpty">
+    <h2>통계 대시보드</h2>
+    <div class="row"><span class="dim">아직 실행 결과가 없습니다.</span><button class="btn pri" id="btnRunSingle2">단일 실행</button><span class="dim small">현재 시나리오를 seed = seedBase 로 1회 실행합니다. ② 애니메이션을 끝까지 재생해도 같은 결과가 생성됩니다.</span></div>
+  </div>
+  <div id="statsBody" hidden>
+    <div class="section"><h2 id="statsTitle">결과</h2><div class="dim small" id="statsMeta"></div></div>
+    <div style="height:14px"></div>
+    <div class="kpis" id="kpiRow"></div>
+    <div class="verdict" id="verdictBox"></div>
+    <div class="cards" id="statCards"></div>
+    <div class="section"><h2>크레인</h2><div class="tblwrap"><table class="tbl" id="craneTable"></table></div></div>
+    <div class="section"><h2>스테이션</h2><div class="tblwrap"><table class="tbl" id="stationTable"></table></div></div>
+  </div>
+</section>
+
+<!-- ================= ④ 실험기 ================= -->
+<section id="tab-exp" class="panel">
+  <div class="section">
+    <h2>설계변수 → 시나리오 행렬</h2>
+    <div class="dim small">현재 시나리오를 기준으로 선택한 변수 조합을 전개합니다. 같은 rep 번호는 시나리오 간 같은 난수(공통난수)를 씁니다.</div>
+    <div class="space" id="expSpace"></div>
+    <div class="row">
+      <label class="dim">반복 R <input type="number" id="expReps" value="10" min="2" max="200" step="1" style="width:70px"></label>
+      <label class="dim">seed <input type="number" id="expSeed" value="12345" step="1" style="width:100px"></label>
+      <button class="btn" id="btnExpMatrix">행렬 생성</button>
+      <button class="btn pri" id="btnExpRun" disabled>실행</button>
+      <button class="btn" id="btnExpCancel" disabled>중단</button>
+    </div>
+    <div class="pbar"><div id="expProg"></div></div>
+    <div class="status" id="expStatus"></div>
+  </div>
+  <div class="section"><h2>시나리오 행렬</h2><div class="tblwrap"><table class="tbl" id="expMatrix"></table></div></div>
+  <div class="section">
+    <h2>결과 <span class="dim">평균 ± 95% CI</span></h2>
+    <div class="row"><button class="btn sm" id="btnExpCsv" disabled>CSV 내보내기</button><button class="btn sm" id="btnExpJson" disabled>JSON 내보내기</button><span class="dim small">행의 "3D"를 누르면 그 시나리오를 ② 애니메이션에서 재생합니다.</span></div>
+    <div class="tblwrap"><table class="tbl" id="expResults"></table></div>
+  </div>
+  <div class="cards" id="expCharts"></div>
+</section>
+
+<!-- ================= ⑤ 최적화기 ================= -->
+<section id="tab-opt" class="panel">
+  <div class="section">
+    <h2>탐색 공간 · 제약</h2>
+    <div class="dim small">2단계 스크리닝: 모든 유효 설계를 R₁회 실행 → 상위 k개를 R₂회로 재평가. 목적: 총 크레인 수 최소 → 실행가능 → 최대 가동률 최소 → 평균 대기 최소.</div>
+    <div class="space" id="optSpace"></div>
+    <div class="row">
+      <label class="dim">목표 가동률 ρ ≤ <input type="number" id="optRho" value="0.8" min="0.1" max="1" step="0.05" style="width:70px"></label>
+      <label class="dim">달성률 ≥ <input type="number" id="optDone" value="0.98" min="0.5" max="1" step="0.01" style="width:70px"></label>
+      <label class="dim">평균 대기열 ≤ <input type="number" id="optQ" value="3" min="0" step="0.5" style="width:70px"></label>
+      <label class="dim">R₁ <input type="number" id="optR1" value="5" min="1" max="50" step="1" style="width:60px"></label>
+      <label class="dim">R₂ <input type="number" id="optR2" value="20" min="2" max="200" step="1" style="width:60px"></label>
+      <label class="dim">상위 k <input type="number" id="optK" value="5" min="1" max="50" step="1" style="width:60px"></label>
+      <button class="btn pri" id="btnOptRun">최적화 실행</button>
+      <button class="btn" id="btnOptCancel" disabled>중단</button>
+    </div>
+    <div class="pbar"><div id="optProg"></div></div>
+    <div class="status" id="optStatus"></div>
+  </div>
+  <div id="optBest" class="best" hidden></div>
+  <div class="cards" id="optCharts"></div>
+  <div class="section"><h2>순위표</h2><div class="dim small" id="optByN"></div><div class="tblwrap"><table class="tbl" id="optTable"></table></div></div>
+</section>
+
+<!-- ================= ⑥ 해석식 ================= -->
+<section id="tab-fem" class="panel"><div id="femBody"></div></section>
+
+<!-- ================= ⑦ 도움말 ================= -->
+<section id="tab-help" class="panel"><div class="help" id="helpBody"></div></section>
+</main>
+
+<script id="three">/*__THREE__*/</script>
+<script class="engine" data-module="kernel.js">/*__MODULE:kernel.js__*/</script>
+<script class="engine" data-module="rng.js">/*__MODULE:rng.js__*/</script>
+<script class="engine" data-module="kin.js">/*__MODULE:kin.js__*/</script>
+<script class="engine" data-module="stats.js">/*__MODULE:stats.js__*/</script>
+<script class="engine" data-module="validate.js">/*__MODULE:validate.js__*/</script>
+<script class="engine" data-module="presets.js">/*__MODULE:presets.js__*/</script>
+<script class="engine" data-module="fem9851.js">/*__MODULE:fem9851.js__*/</script>
+<script class="engine" data-module="engine.js">/*__MODULE:engine.js__*/</script>
+<script class="engine" data-module="optimizer.js">/*__MODULE:optimizer.js__*/</script>
+<script class="app" data-module="scene.js">/*__MODULE:scene.js__*/</script>
+<script class="app" data-module="charts.js">/*__MODULE:charts.js__*/</script>
+<script class="app" data-module="runner.js">/*__MODULE:runner.js__*/</script>
+<script class="app" data-module="view3d.js">/*__MODULE:view3d.js__*/</script>
+<script>/*__BUILD__*/</script>
+<script class="app" data-module="app.js">/*__MODULE:app.js__*/</script>
+</body>
+</html>

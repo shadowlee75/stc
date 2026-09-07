@@ -1,0 +1,875 @@
+{
+ "source": "fem9851/stc_calculator.py v2.0.0",
+ "note": "clean trapezoid specs (low=0, no delays)",
+ "cases": [
+  {
+   "name": "case1_sd_one",
+   "input": {
+    "travel_length": 20000.0,
+    "lift_length": 20000.0,
+    "bay_count": 20,
+    "tier_count": 10,
+    "alpha": 0.95,
+    "av": 0.85,
+    "fork_depth": "Single Deep",
+    "fork_count": "One Fork",
+    "stroke_single": 1400.0,
+    "stroke_double": 2800.0,
+    "lift_stroke": 110.0,
+    "travel": {
+     "high": 100,
+     "acc": 0.3
+    },
+    "hoist": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "fork": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "in_full": 50.0,
+    "in_empty": 0.0,
+    "out_full": 50.0,
+    "out_empty": 0.0,
+    "combined_ratio": 0.0,
+    "case_type": 1,
+    "e_x": 0.0,
+    "e_y": 0.0,
+    "a_x": 0.0,
+    "a_y": 0.0,
+    "n_stc": 1,
+    "t03": 4.0,
+    "t04": 4.0,
+    "t05": 12.0
+   },
+   "result": {
+    "P1": [
+     4000.0,
+     13333.333333333334
+    ],
+    "P2": [
+     13333.333333333334,
+     4000.0
+    ],
+    "tP1E": 27.666666666666668,
+    "tP2E": 13.555555555555555,
+    "tP1A": 27.666666666666668,
+    "tP2A": 13.555555555555555,
+    "tP1_P2": 19.666666666666668,
+    "tA_E": 0.0,
+    "tLHD_E": 8.538083151964685,
+    "tLHD_ET": 8.538083151964685,
+    "tLHD_ZT": 8.538083151964685,
+    "tF": 5.710558319921125,
+    "tREL": 0.0,
+    "tm1E": 62.29838852615159,
+    "tm1A": 62.29838852615159,
+    "tm1": 62.29838852615159,
+    "tm2": 107.04122149674764,
+    "combined_count": 0.0,
+    "single_in": 50.0,
+    "single_out": 50.0,
+    "sum_in": 3114.9194263075797,
+    "sum_out": 3114.9194263075797,
+    "sum_combined": 0.0,
+    "sum_rel": 0.0,
+    "total_time": 6229.838852615159,
+    "base_time": 3600.0,
+    "efficiency": 1.7305107923930998,
+    "margin": -3169.8388526151593,
+    "pallets_per_cycle": 1.0
+   }
+  },
+  {
+   "name": "case1_dd_one",
+   "input": {
+    "travel_length": 20000.0,
+    "lift_length": 20000.0,
+    "bay_count": 20,
+    "tier_count": 10,
+    "alpha": 0.95,
+    "av": 0.85,
+    "fork_depth": "Double Deep",
+    "fork_count": "One Fork",
+    "stroke_single": 1400.0,
+    "stroke_double": 2800.0,
+    "lift_stroke": 110.0,
+    "travel": {
+     "high": 100,
+     "acc": 0.3
+    },
+    "hoist": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "fork": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "in_full": 50.0,
+    "in_empty": 0.0,
+    "out_full": 50.0,
+    "out_empty": 0.0,
+    "combined_ratio": 0.0,
+    "case_type": 1,
+    "e_x": 0.0,
+    "e_y": 0.0,
+    "a_x": 0.0,
+    "a_y": 0.0,
+    "n_stc": 1,
+    "t03": 4.0,
+    "t04": 4.0,
+    "t05": 12.0
+   },
+   "result": {
+    "P1": [
+     4000.0,
+     13333.333333333334
+    ],
+    "P2": [
+     13333.333333333334,
+     4000.0
+    ],
+    "tP1E": 27.666666666666668,
+    "tP2E": 13.555555555555555,
+    "tP1A": 27.666666666666668,
+    "tP2A": 13.555555555555555,
+    "tP1_P2": 19.666666666666668,
+    "tA_E": 0.0,
+    "tLHD_E": 8.538083151964685,
+    "tLHD_ET": 8.538083151964685,
+    "tLHD_ZT": 14.138083151964686,
+    "tF": 5.710558319921125,
+    "tREL": 34.09728294377162,
+    "tm1E": 65.0983885261516,
+    "tm1A": 82.1470299980374,
+    "tm1": 73.6227092620945,
+    "tm2": 129.68986296863343,
+    "combined_count": 0.0,
+    "single_in": 50.0,
+    "single_out": 50.0,
+    "sum_in": 3254.9194263075797,
+    "sum_out": 4107.35149990187,
+    "sum_combined": 0.0,
+    "sum_rel": 0.0,
+    "total_time": 7362.2709262094495,
+    "base_time": 3600.0,
+    "efficiency": 2.0450752572804025,
+    "margin": -4302.2709262094495,
+    "pallets_per_cycle": 1.0
+   }
+  },
+  {
+   "name": "case1_sd_twin_combined",
+   "input": {
+    "travel_length": 20000.0,
+    "lift_length": 20000.0,
+    "bay_count": 20,
+    "tier_count": 10,
+    "alpha": 0.95,
+    "av": 0.85,
+    "fork_depth": "Single Deep",
+    "fork_count": "Twin Fork",
+    "stroke_single": 1400.0,
+    "stroke_double": 2800.0,
+    "lift_stroke": 110.0,
+    "travel": {
+     "high": 100,
+     "acc": 0.3
+    },
+    "hoist": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "fork": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "in_full": 80.0,
+    "in_empty": 0.0,
+    "out_full": 70.0,
+    "out_empty": 0.0,
+    "combined_ratio": 0.6,
+    "case_type": 1,
+    "e_x": 0.0,
+    "e_y": 0.0,
+    "a_x": 0.0,
+    "a_y": 0.0,
+    "n_stc": 1,
+    "t03": 4.0,
+    "t04": 4.0,
+    "t05": 12.0
+   },
+   "result": {
+    "P1": [
+     4000.0,
+     13333.333333333334
+    ],
+    "P2": [
+     13333.333333333334,
+     4000.0
+    ],
+    "tP1E": 27.666666666666668,
+    "tP2E": 13.555555555555555,
+    "tP1A": 27.666666666666668,
+    "tP2A": 13.555555555555555,
+    "tP1_P2": 19.666666666666668,
+    "tA_E": 0.0,
+    "tLHD_E": 8.538083151964685,
+    "tLHD_ET": 8.538083151964685,
+    "tLHD_ZT": 8.538083151964685,
+    "tF": 5.710558319921125,
+    "tREL": 0.0,
+    "tm1E": 62.29838852615159,
+    "tm1A": 62.29838852615159,
+    "tm1": 62.29838852615159,
+    "tm2": 107.04122149674764,
+    "combined_count": 21.0,
+    "single_in": 19.0,
+    "single_out": 14.0,
+    "sum_in": 1183.6693819968802,
+    "sum_out": 872.1774393661223,
+    "sum_combined": 2247.8656514317004,
+    "sum_rel": 0.0,
+    "total_time": 4303.712472794703,
+    "base_time": 3600.0,
+    "efficiency": 1.1954756868874175,
+    "margin": -1243.712472794703,
+    "pallets_per_cycle": 2.0
+   }
+  },
+  {
+   "name": "case3_ey",
+   "input": {
+    "travel_length": 20000.0,
+    "lift_length": 20000.0,
+    "bay_count": 20,
+    "tier_count": 10,
+    "alpha": 0.95,
+    "av": 0.85,
+    "fork_depth": "Single Deep",
+    "fork_count": "One Fork",
+    "stroke_single": 1400.0,
+    "stroke_double": 2800.0,
+    "lift_stroke": 110.0,
+    "travel": {
+     "high": 100,
+     "acc": 0.3
+    },
+    "hoist": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "fork": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "in_full": 50.0,
+    "in_empty": 0.0,
+    "out_full": 50.0,
+    "out_empty": 0.0,
+    "combined_ratio": 0.0,
+    "case_type": 3,
+    "e_x": 0.0,
+    "e_y": 3000.0,
+    "a_x": 0.0,
+    "a_y": 3000.0,
+    "n_stc": 1,
+    "t03": 4.0,
+    "t04": 4.0,
+    "t05": 12.0
+   },
+   "result": {
+    "P1": [
+     4000.0,
+     16333.333333333334
+    ],
+    "P2": [
+     13333.333333333334,
+     7000.0
+    ],
+    "tP1E": 27.666666666666668,
+    "tP2E": 13.555555555555555,
+    "tP1A": 27.666666666666668,
+    "tP2A": 13.555555555555555,
+    "tP1_P2": 19.666666666666668,
+    "tA_E": 0.0,
+    "tLHD_E": 8.538083151964685,
+    "tLHD_ET": 8.538083151964685,
+    "tLHD_ZT": 8.538083151964685,
+    "tF": 5.710558319921125,
+    "tREL": 0.0,
+    "tm1E": 62.29838852615159,
+    "tm1A": 62.29838852615159,
+    "tm1": 62.29838852615159,
+    "tm2": 107.04122149674764,
+    "combined_count": 0.0,
+    "single_in": 50.0,
+    "single_out": 50.0,
+    "sum_in": 3114.9194263075797,
+    "sum_out": 3114.9194263075797,
+    "sum_combined": 0.0,
+    "sum_rel": 0.0,
+    "total_time": 6229.838852615159,
+    "base_time": 3600.0,
+    "efficiency": 1.7305107923930998,
+    "margin": -3169.8388526151593,
+    "pallets_per_cycle": 1.0
+   }
+  },
+  {
+   "name": "case3_ey_high",
+   "input": {
+    "travel_length": 20000.0,
+    "lift_length": 20000.0,
+    "bay_count": 20,
+    "tier_count": 10,
+    "alpha": 0.95,
+    "av": 0.85,
+    "fork_depth": "Single Deep",
+    "fork_count": "One Fork",
+    "stroke_single": 1400.0,
+    "stroke_double": 2800.0,
+    "lift_stroke": 110.0,
+    "travel": {
+     "high": 100,
+     "acc": 0.3
+    },
+    "hoist": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "fork": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "in_full": 50.0,
+    "in_empty": 0.0,
+    "out_full": 50.0,
+    "out_empty": 0.0,
+    "combined_ratio": 0.0,
+    "case_type": 3,
+    "e_x": 0.0,
+    "e_y": 14000.0,
+    "a_x": 0.0,
+    "a_y": 14000.0,
+    "n_stc": 1,
+    "t03": 4.0,
+    "t04": 4.0,
+    "t05": 12.0
+   },
+   "result": {
+    "P1": [
+     4000.0,
+     10666.666666666666
+    ],
+    "P2": [
+     13333.333333333334,
+     20000.0
+    ],
+    "tP1E": 7.666666666666668,
+    "tP2E": 13.555555555555555,
+    "tP1A": 7.666666666666668,
+    "tP2A": 13.555555555555555,
+    "tP1_P2": 19.666666666666668,
+    "tA_E": 0.0,
+    "tLHD_E": 8.538083151964685,
+    "tLHD_ET": 8.538083151964685,
+    "tLHD_ZT": 8.538083151964685,
+    "tF": 5.710558319921125,
+    "tREL": 0.0,
+    "tm1E": 42.29838852615159,
+    "tm1A": 42.29838852615159,
+    "tm1": 42.29838852615159,
+    "tm2": 87.04122149674762,
+    "combined_count": 0.0,
+    "single_in": 50.0,
+    "single_out": 50.0,
+    "sum_in": 2114.9194263075797,
+    "sum_out": 2114.9194263075797,
+    "sum_combined": 0.0,
+    "sum_rel": 0.0,
+    "total_time": 4229.838852615159,
+    "base_time": 3600.0,
+    "efficiency": 1.1749552368375442,
+    "margin": -1169.8388526151593,
+    "pallets_per_cycle": 1.0
+   }
+  },
+  {
+   "name": "case4_ex",
+   "input": {
+    "travel_length": 20000.0,
+    "lift_length": 20000.0,
+    "bay_count": 20,
+    "tier_count": 10,
+    "alpha": 0.95,
+    "av": 0.85,
+    "fork_depth": "Double Deep",
+    "fork_count": "Twin Fork",
+    "stroke_single": 1400.0,
+    "stroke_double": 2800.0,
+    "lift_stroke": 110.0,
+    "travel": {
+     "high": 100,
+     "acc": 0.3
+    },
+    "hoist": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "fork": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "in_full": 50.0,
+    "in_empty": 0.0,
+    "out_full": 50.0,
+    "out_empty": 0.0,
+    "combined_ratio": 0.3,
+    "case_type": 4,
+    "e_x": 5000.0,
+    "e_y": 0.0,
+    "a_x": 5000.0,
+    "a_y": 0.0,
+    "n_stc": 1,
+    "t03": 4.0,
+    "t04": 4.0,
+    "t05": 12.0
+   },
+   "result": {
+    "P1": [
+     9000.0,
+     13333.333333333334
+    ],
+    "P2": [
+     18333.333333333336,
+     4000.0
+    ],
+    "tP1E": 27.666666666666668,
+    "tP2E": 13.555555555555557,
+    "tP1A": 27.666666666666668,
+    "tP2A": 13.555555555555557,
+    "tP1_P2": 19.666666666666668,
+    "tA_E": 0.0,
+    "tLHD_E": 8.538083151964685,
+    "tLHD_ET": 8.538083151964685,
+    "tLHD_ZT": 14.138083151964686,
+    "tF": 5.710558319921125,
+    "tREL": 34.09728294377162,
+    "tm1E": 65.0983885261516,
+    "tm1A": 82.1470299980374,
+    "tm1": 73.6227092620945,
+    "tm2": 129.68986296863343,
+    "combined_count": 7.5,
+    "single_in": 17.5,
+    "single_out": 17.5,
+    "sum_in": 1139.221799207653,
+    "sum_out": 1437.5730249656544,
+    "sum_combined": 972.6739722647508,
+    "sum_rel": 0.0,
+    "total_time": 3549.4687964380582,
+    "base_time": 3600.0,
+    "efficiency": 0.9859635545661273,
+    "margin": -489.46879643805823,
+    "pallets_per_cycle": 2.0
+   }
+  },
+  {
+   "name": "case4_ex_high",
+   "input": {
+    "travel_length": 20000.0,
+    "lift_length": 20000.0,
+    "bay_count": 20,
+    "tier_count": 10,
+    "alpha": 0.95,
+    "av": 0.85,
+    "fork_depth": "Single Deep",
+    "fork_count": "One Fork",
+    "stroke_single": 1400.0,
+    "stroke_double": 2800.0,
+    "lift_stroke": 110.0,
+    "travel": {
+     "high": 100,
+     "acc": 0.3
+    },
+    "hoist": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "fork": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "in_full": 50.0,
+    "in_empty": 0.0,
+    "out_full": 50.0,
+    "out_empty": 0.0,
+    "combined_ratio": 0.0,
+    "case_type": 4,
+    "e_x": 15000.0,
+    "e_y": 0.0,
+    "a_x": 15000.0,
+    "a_y": 0.0,
+    "n_stc": 1,
+    "t03": 4.0,
+    "t04": 4.0,
+    "t05": 12.0
+   },
+   "result": {
+    "P1": [
+     21000.0,
+     13333.333333333334
+    ],
+    "P2": [
+     11666.666666666666,
+     4000.0
+    ],
+    "tP1E": 27.666666666666668,
+    "tP2E": 9.0,
+    "tP1A": 27.666666666666668,
+    "tP2A": 9.0,
+    "tP1_P2": 19.666666666666668,
+    "tA_E": 0.0,
+    "tLHD_E": 8.538083151964685,
+    "tLHD_ET": 8.538083151964685,
+    "tLHD_ZT": 8.538083151964685,
+    "tF": 5.710558319921125,
+    "tREL": 0.0,
+    "tm1E": 57.74283297059604,
+    "tm1A": 57.74283297059604,
+    "tm1": 57.74283297059604,
+    "tm2": 102.48566594119208,
+    "combined_count": 0.0,
+    "single_in": 50.0,
+    "single_out": 50.0,
+    "sum_in": 2887.141648529802,
+    "sum_out": 2887.141648529802,
+    "sum_combined": 0.0,
+    "sum_rel": 0.0,
+    "total_time": 5774.283297059604,
+    "base_time": 3600.0,
+    "efficiency": 1.6039675825165567,
+    "margin": -2714.2832970596037,
+    "pallets_per_cycle": 1.0
+   }
+  },
+  {
+   "name": "case5_ay",
+   "input": {
+    "travel_length": 20000.0,
+    "lift_length": 20000.0,
+    "bay_count": 20,
+    "tier_count": 10,
+    "alpha": 0.95,
+    "av": 0.85,
+    "fork_depth": "Single Deep",
+    "fork_count": "One Fork",
+    "stroke_single": 1400.0,
+    "stroke_double": 2800.0,
+    "lift_stroke": 110.0,
+    "travel": {
+     "high": 100,
+     "acc": 0.3
+    },
+    "hoist": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "fork": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "in_full": 50.0,
+    "in_empty": 0.0,
+    "out_full": 50.0,
+    "out_empty": 0.0,
+    "combined_ratio": 0.0,
+    "case_type": 5,
+    "e_x": 0.0,
+    "e_y": 0.0,
+    "a_x": 0.0,
+    "a_y": 4000.0,
+    "n_stc": 1,
+    "t03": 4.0,
+    "t04": 4.0,
+    "t05": 12.0
+   },
+   "result": {
+    "P1": [
+     4000.0,
+     15333.333333333334
+    ],
+    "P2": [
+     13333.333333333334,
+     6000.0
+    ],
+    "tP1E": 31.666666666666668,
+    "tP2E": 13.555555555555555,
+    "tP1A": 23.666666666666668,
+    "tP2A": 13.555555555555555,
+    "tP1_P2": 19.666666666666668,
+    "tA_E": 9.0,
+    "tLHD_E": 8.538083151964685,
+    "tLHD_ET": 8.538083151964685,
+    "tLHD_ZT": 8.538083151964685,
+    "tF": 5.710558319921125,
+    "tREL": 0.0,
+    "tm1E": 66.2983885261516,
+    "tm1A": 58.29838852615159,
+    "tm1": 62.2983885261516,
+    "tm2": 111.04122149674764,
+    "combined_count": 0.0,
+    "single_in": 50.0,
+    "single_out": 50.0,
+    "sum_in": 3314.9194263075797,
+    "sum_out": 2914.9194263075797,
+    "sum_combined": 0.0,
+    "sum_rel": 450.0,
+    "total_time": 6679.838852615159,
+    "base_time": 3600.0,
+    "efficiency": 1.8555107923930998,
+    "margin": -3619.8388526151593,
+    "pallets_per_cycle": 1.0
+   }
+  },
+  {
+   "name": "case6_ey",
+   "input": {
+    "travel_length": 20000.0,
+    "lift_length": 20000.0,
+    "bay_count": 20,
+    "tier_count": 10,
+    "alpha": 0.95,
+    "av": 0.85,
+    "fork_depth": "Double Deep",
+    "fork_count": "One Fork",
+    "stroke_single": 1400.0,
+    "stroke_double": 2800.0,
+    "lift_stroke": 110.0,
+    "travel": {
+     "high": 100,
+     "acc": 0.3
+    },
+    "hoist": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "fork": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "in_full": 50.0,
+    "in_empty": 0.0,
+    "out_full": 50.0,
+    "out_empty": 0.0,
+    "combined_ratio": 0.0,
+    "case_type": 6,
+    "e_x": 0.0,
+    "e_y": 2000.0,
+    "a_x": 0.0,
+    "a_y": 0.0,
+    "n_stc": 1,
+    "t03": 4.0,
+    "t04": 4.0,
+    "t05": 12.0
+   },
+   "result": {
+    "P1": [
+     4000.0,
+     14333.333333333334
+    ],
+    "P2": [
+     13333.333333333334,
+     5000.0
+    ],
+    "tP1E": 25.666666666666668,
+    "tP2E": 13.555555555555555,
+    "tP1A": 29.666666666666668,
+    "tP2A": 13.555555555555555,
+    "tP1_P2": 19.666666666666668,
+    "tA_E": 5.0,
+    "tLHD_E": 8.538083151964685,
+    "tLHD_ET": 8.538083151964685,
+    "tLHD_ZT": 14.138083151964686,
+    "tF": 5.710558319921125,
+    "tREL": 34.09728294377162,
+    "tm1E": 63.098388526151595,
+    "tm1A": 84.1470299980374,
+    "tm1": 73.6227092620945,
+    "tm2": 127.68986296863343,
+    "combined_count": 0.0,
+    "single_in": 50.0,
+    "single_out": 50.0,
+    "sum_in": 3154.9194263075797,
+    "sum_out": 4207.35149990187,
+    "sum_combined": 0.0,
+    "sum_rel": 250.0,
+    "total_time": 7612.2709262094495,
+    "base_time": 3600.0,
+    "efficiency": 2.114519701724847,
+    "margin": -4552.2709262094495,
+    "pallets_per_cycle": 1.0
+   }
+  },
+  {
+   "name": "case1_short_tri",
+   "input": {
+    "travel_length": 6000.0,
+    "lift_length": 4000.0,
+    "bay_count": 6,
+    "tier_count": 4,
+    "alpha": 0.95,
+    "av": 0.85,
+    "fork_depth": "Single Deep",
+    "fork_count": "One Fork",
+    "stroke_single": 1400.0,
+    "stroke_double": 2800.0,
+    "lift_stroke": 110.0,
+    "travel": {
+     "high": 100,
+     "acc": 0.3
+    },
+    "hoist": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "fork": {
+     "high": 30,
+     "acc": 0.5
+    },
+    "in_full": 50.0,
+    "in_empty": 0.0,
+    "out_full": 50.0,
+    "out_empty": 0.0,
+    "combined_ratio": 0.0,
+    "case_type": 1,
+    "e_x": 0.0,
+    "e_y": 0.0,
+    "a_x": 0.0,
+    "a_y": 0.0,
+    "n_stc": 1,
+    "t03": 4.0,
+    "t04": 4.0,
+    "t05": 12.0
+   },
+   "result": {
+    "P1": [
+     1200.0,
+     2666.6666666666665
+    ],
+    "P2": [
+     4000.0,
+     800.0
+    ],
+    "tP1E": 6.333333333333333,
+    "tP2E": 7.302967433402214,
+    "tP1A": 6.333333333333333,
+    "tP2A": 7.302967433402214,
+    "tP1_P2": 6.110100926607787,
+    "tA_E": 0.0,
+    "tLHD_E": 8.538083151964685,
+    "tLHD_ET": 8.538083151964685,
+    "tLHD_ZT": 8.538083151964685,
+    "tF": 4.219846334921265,
+    "tREL": 0.0,
+    "tm1E": 34.712467070664914,
+    "tm1A": 34.712467070664914,
+    "tm1": 34.712467070664914,
+    "tm2": 65.89873430120207,
+    "combined_count": 0.0,
+    "single_in": 50.0,
+    "single_out": 50.0,
+    "sum_in": 1735.6233535332458,
+    "sum_out": 1735.6233535332458,
+    "sum_combined": 0.0,
+    "sum_rel": 0.0,
+    "total_time": 3471.2467070664916,
+    "base_time": 3600.0,
+    "efficiency": 0.9642351964073588,
+    "margin": -411.2467070664916,
+    "pallets_per_cycle": 1.0
+   }
+  },
+  {
+   "name": "carbody_std",
+   "input": {
+    "travel_length": 28250.0,
+    "lift_length": 12670.0,
+    "bay_count": 5,
+    "tier_count": 6,
+    "alpha": 0.95,
+    "av": 0.85,
+    "fork_depth": "Single Deep",
+    "fork_count": "One Fork",
+    "stroke_single": 1400.0,
+    "stroke_double": 2800.0,
+    "lift_stroke": 110.0,
+    "travel": {
+     "high": 175,
+     "acc": 0.4
+    },
+    "hoist": {
+     "high": 50,
+     "acc": 0.5
+    },
+    "fork": {
+     "high": 60,
+     "acc": 0.6
+    },
+    "in_full": 93.0,
+    "in_empty": 0.0,
+    "out_full": 92.0,
+    "out_empty": 0.0,
+    "combined_ratio": 0.0,
+    "case_type": 1,
+    "e_x": 0.0,
+    "e_y": 0.0,
+    "a_x": 0.0,
+    "a_y": 0.0,
+    "n_stc": 1,
+    "t03": 4.0,
+    "t04": 4.0,
+    "t05": 12.0
+   },
+   "result": {
+    "P1": [
+     5650.0,
+     8446.666666666666
+    ],
+    "P2": [
+     18833.333333333332,
+     2534.0
+    ],
+    "tP1E": 11.802666666666664,
+    "tP2E": 13.7234592334926,
+    "tP1A": 11.802666666666664,
+    "tP2A": 13.7234592334926,
+    "tP1_P2": 11.481869766433222,
+    "tA_E": 0.0,
+    "tLHD_E": 6.966449765185462,
+    "tLHD_ET": 6.966449765185462,
+    "tLHD_ZT": 6.966449765185462,
+    "tF": 7.310780574896823,
+    "tREL": 0.0,
+    "tm1E": 43.45902543053019,
+    "tm1A": 43.45902543053019,
+    "tm1": 43.45902543053019,
+    "tm2": 76.87379472733434,
+    "combined_count": 0.0,
+    "single_in": 93.0,
+    "single_out": 92.0,
+    "sum_in": 4041.6893650393076,
+    "sum_out": 3998.2303396087773,
+    "sum_combined": 0.0,
+    "sum_rel": 0.0,
+    "total_time": 8039.919704648085,
+    "base_time": 3600.0,
+    "efficiency": 2.2333110290689127,
+    "margin": -4979.919704648085,
+    "pallets_per_cycle": 1.0
+   }
+  }
+ ]
+}
