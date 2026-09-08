@@ -1,0 +1,290 @@
+<title>TC 저장 설비 검산 시트</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap">
+<style>
+:root{
+  --paper:#fbfaf8; --paper2:#f3f0ea; --band:#eeeae1;
+  --ink:#14161a; --dim:#565b63; --muted:#8a8b85;
+  --line:#dcd8d0; --rule:#14161a;
+  --blue:#002FA7; --blue-soft:#e9edfa;
+  --ok:#0a7a3c; --err:#b3001b; --warn:#a05c00;
+  --sans:"IBM Plex Sans KR","Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",Consolas,"Courier New",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#16171a; --paper2:#1e2024; --band:#24272c;
+    --ink:#f2f1ee; --dim:#a9adb5; --muted:#83868d;
+    --line:#2e3238; --rule:#f2f1ee;
+    --blue:#7f9dff; --blue-soft:#1b2334;
+    --ok:#3cc26e; --err:#ff7070; --warn:#e0a33a;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#16171a; --paper2:#1e2024; --band:#24272c;
+  --ink:#f2f1ee; --dim:#a9adb5; --muted:#83868d;
+  --line:#2e3238; --rule:#f2f1ee;
+  --blue:#7f9dff; --blue-soft:#1b2334;
+  --ok:#3cc26e; --err:#ff7070; --warn:#e0a33a;
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); font-size:14.5px; line-height:1.66}
+.wrap{max-width:1000px; margin:0 auto; padding:32px 34px 110px}
+@media (max-width:700px){ .wrap{padding:22px 18px 70px} }
+h1,h2{text-wrap:balance}
+:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
+
+/* 표제 */
+.folio{border-bottom:2px solid var(--rule); padding-bottom:18px; margin-bottom:12px}
+.folio .kicker{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--blue); font-weight:600}
+.folio h1{font-size:clamp(25px,3.6vw,34px); font-weight:700; letter-spacing:-.022em; margin:7px 0 5px}
+.folio .lede{color:var(--dim); font-weight:300; max-width:62ch; font-size:15.5px}
+.folio .meta{display:flex; flex-wrap:wrap; gap:0 24px; margin-top:14px; font-family:var(--mono); font-size:12px; color:var(--muted)}
+.folio .meta b{color:var(--ink); font-weight:600}
+
+/* 판정 배너 */
+.verdict{display:grid; grid-template-columns:auto 1fr; gap:18px; align-items:center;
+  border:2px solid var(--blue); padding:14px 18px; margin:22px 0 34px}
+.verdict .big{font-family:var(--mono); font-size:30px; font-weight:600; color:var(--blue); letter-spacing:-.02em; line-height:1}
+.verdict .t{font-weight:600; margin-bottom:2px}
+.verdict .s{color:var(--dim); font-size:13.5px}
+
+section{margin-bottom:40px; scroll-margin-top:16px}
+section > h2{display:grid; grid-template-columns:30px 1fr; gap:10px; align-items:baseline;
+  font-size:18px; font-weight:700; letter-spacing:-.016em; margin:0 0 4px; padding-bottom:8px; border-bottom:1px solid var(--rule)}
+section > h2 .n{font-family:var(--mono); font-size:12px; font-weight:600; color:var(--blue)}
+.sub{color:var(--dim); font-size:13.5px; margin:8px 0 12px; max-width:72ch}
+p{margin:0 0 11px} p:last-child{margin-bottom:0}
+ul{margin:0 0 11px; padding-left:20px} li{margin:3px 0}
+strong{font-weight:600}
+.mono,code{font-family:var(--mono); font-size:.9em}
+code{background:var(--paper2); padding:1px 5px; border-radius:2px}
+.dim{color:var(--dim)} .small{font-size:12.5px}
+
+/* 표 */
+.tw{overflow-x:auto; margin:12px 0 14px}
+table{border-collapse:collapse; width:100%; font-size:13px; min-width:520px}
+th,td{padding:6px 11px 6px 0; border-bottom:1px solid var(--line); text-align:left; vertical-align:top}
+th{font-family:var(--mono); font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); font-weight:600; border-bottom:1px solid var(--rule); white-space:nowrap}
+td.n,th.n{font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right; padding-right:16px; white-space:nowrap}
+td.k{font-family:var(--mono); font-size:12px; white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+tr.sum td{border-top:1px solid var(--rule); font-weight:600}
+tr.sum td.n{font-weight:600}
+.ok{color:var(--ok); font-weight:600} .err{color:var(--err); font-weight:600} .warnc{color:var(--warn); font-weight:600}
+.chk{font-family:var(--mono); font-size:11.5px; color:var(--ok)}
+
+/* 수식 */
+.eq{font-family:var(--mono); font-size:12.5px; background:var(--paper2); border-left:3px solid var(--blue);
+  padding:9px 14px; margin:11px 0; white-space:pre-wrap; line-height:1.75; overflow-x:auto}
+
+/* 콜아웃 */
+.note{border-left:3px solid var(--blue); background:var(--paper2); padding:10px 14px; margin:14px 0; font-size:13.5px}
+.note.warn{border-left-color:var(--warn)}
+.note.stop{border-left-color:var(--err)}
+.note b{font-weight:600}
+
+/* 대조 카드 */
+.compare{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); margin:14px 0}
+.compare > div{background:var(--paper); padding:12px 14px}
+.compare .m{font-size:11.5px; color:var(--dim)}
+.compare .v{font-family:var(--mono); font-size:23px; font-weight:600; letter-spacing:-.01em; margin:3px 0 2px}
+.compare .d{font-size:12px; color:var(--muted)}
+.compare .hero .v{color:var(--blue)}
+.end{border-top:2px solid var(--rule); padding-top:13px; font-family:var(--mono); font-size:11.5px; color:var(--muted)}
+</style>
+
+<div class="wrap">
+
+<header class="folio">
+  <div class="kicker">검산 시트 · 도면 판독 → 입력 → 계산 → 시뮬레이션</div>
+  <h1>TC 저장 설비 물동량 검산</h1>
+  <p class="lede">도면 <span class="mono">TC details</span>에서 읽은 치수가 어떻게 입력이 되고, 그 입력에서 사이클타임과 필요 대수가 어떻게 나오는지를 한 줄씩 되짚어 확인할 수 있게 정리했습니다. 모든 중간값을 적었으므로 손계산으로 대조하실 수 있습니다.</p>
+  <div class="meta">
+    <span>작성 <b>2026-09-08</b></span>
+    <span>대상 <b>TC 저장 설비 (Top Coat 버퍼)</b></span>
+    <span>기준 <b>FEM 9.851 준용</b></span>
+    <span>도구 <b>STC AS/RS 시뮬레이터 v0.1</b></span>
+  </div>
+</header>
+
+<div class="verdict">
+  <div class="big">2통로</div>
+  <div>
+    <div class="t">도면의 2통로 구성이 최소 필요 대수입니다.</div>
+    <div class="s">1통로는 달성률 53.6%로 불가. 2통로는 성립하되, <strong>운전 방식에 따라 여유가 크게 달라집니다</strong> — 6·7절 참조.</div>
+  </div>
+</div>
+
+<!-- 1 -->
+<section id="s1">
+  <h2><span class="n">1</span><span>도면 판독과 치수 검산</span></h2>
+  <p class="sub">도면에 적힌 치수끼리 서로 맞는지 먼저 확인했습니다. 다섯 항목 모두 독립적으로 검산됩니다.</p>
+  <div class="tw"><table>
+    <thead><tr><th>항목</th><th>도면 판독</th><th>검산식</th><th class="n">결과</th><th>대조</th></tr></thead>
+    <tbody>
+      <tr><td>베이</td><td class="k">6개 · 피치 5,650</td><td class="k">bay1 → bay6 = 5,650 × 5</td><td class="n">28,250</td><td class="chk">✓ 도면 치수선 일치</td></tr>
+      <tr><td>베이 중심</td><td class="k">bay1 = 5,550</td><td class="k">5,550 / 11,200 / 16,850 / 22,500 / 28,150 / 33,800</td><td class="n">6개</td><td class="chk">✓</td></tr>
+      <tr><td>우측 타워</td><td class="k">6,000 + 5,200</td><td class="k">bay6 33,800 + 11,200</td><td class="n">45,000</td><td class="chk">✓ 전장 45,000</td></tr>
+      <tr><td>단</td><td class="k">6단 · 피치 2,900 · 최하단 1,500</td><td class="k">1,500 + 2,900 × 5 = 16,000, + 상부 3,550</td><td class="n">19,550</td><td class="chk">✓ 전고 19,600 (Δ 50)</td></tr>
+      <tr><td>통로 폭</td><td class="k">랙 2,050 + 통로 3,200 + 랙 2,050</td><td class="k">7,300 × 2통로 + 100</td><td class="n">14,700</td><td class="chk">✓ System width 14,700</td></tr>
+      <tr class="sum"><td>저장 셀</td><td class="k">6 bay × 6 단 × 양측</td><td class="k">72 / 통로 × 2통로</td><td class="n">144</td><td></td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>물동량</b> · 도면 주기 <span class="mono">Entry from TC coolers 70 JPH</span>(상부) · <span class="mono">Exit to insp. &amp; polish 70 JPH</span>(하부). 입출이 같아 재고 드리프트가 없습니다. 통로 2개이므로 <strong>통로당 입고 35 · 출고 35 JPH</strong>로 나눠 계산합니다.</div>
+  <div class="note warn"><b>Rev.0 계산서와 다른 설비입니다.</b> 계산서는 5 Bay · 30셀 · 1통로 · 입고 93 / 출고 92 JPH(Sealing·2tone·Repair)였습니다. 이 도면은 6 Bay · 144셀 · 2통로 · 70 / 70 JPH(TC 쿨러 → 검사·폴리시)로, 공정 위치가 다릅니다.</div>
+</section>
+
+<!-- 2 -->
+<section id="s2">
+  <h2><span class="n">2</span><span>좌표</span></h2>
+  <p class="sub">주행 방향을 x, 높이를 y로 둡니다. 원점은 통로 좌단입니다. FEM 대표점은 랙 벽면(x0 = 2.725 m, L = 33.9 m, H = 16.0 m) 위에 놓입니다.</p>
+  <div class="tw"><table>
+    <thead><tr><th>점</th><th>정의</th><th class="n">x [m]</th><th class="n">y [m]</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><td><strong>E</strong> 입고</td><td>TC coolers 반입구 (상부)</td><td class="n">39.800</td><td class="n">14.750</td><td class="small dim">타워 내 위치 — <strong>가정</strong>, 확인 요</td></tr>
+      <tr><td><strong>A</strong> 출고</td><td>검사·폴리시 반출구 (하부)</td><td class="n">39.800</td><td class="n">1.500</td><td class="small dim">최하단 레벨과 같은 높이로 가정</td></tr>
+      <tr><td><strong>P1</strong></td><td>FEM 대표점 1 = (x₀ + L/5, 2H/3)</td><td class="n">9.505</td><td class="n">10.667</td><td class="small dim">FEM 9.851</td></tr>
+      <tr><td><strong>P2</strong></td><td>FEM 대표점 2 = (x₀ + 2L/3, H/5)</td><td class="n">25.325</td><td class="n">3.200</td><td class="small dim">FEM 9.851</td></tr>
+      <tr><td>셀 범위</td><td>실제 저장 위치 72개</td><td class="n">5.55 ~ 33.80</td><td class="n">1.50 ~ 16.00</td><td class="small dim">6 × 6 × 양측</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 3 -->
+<section id="s3">
+  <h2><span class="n">3</span><span>축 제원과 임계거리</span></h2>
+  <p class="sub">임계거리 <span class="mono">s_crit</span>보다 짧은 구간은 정격속도에 도달하지 못해 삼각 프로파일이 됩니다. 이 설비는 주행 임계거리가 21.3 m로 길어 <strong>대부분의 주행이 삼각 프로파일</strong>입니다.</p>
+  <div class="eq">s_crit = v²/2 × (1/a + 1/d)
+사다리꼴 (s ≥ s_crit) :  t = s/v + v/2 × (1/a + 1/d)
+삼각     (s &lt; s_crit) :  t = 2√(s/a)          (a = d 인 경우)</div>
+  <div class="tw"><table>
+    <thead><tr><th>축</th><th class="n">정격속도</th><th class="n">가·감속도</th><th class="n">s_crit</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>주행 x</td><td class="n">175 m/min = 2.9167 m/s</td><td class="n">0.4 m/s²</td><td class="n">21.267 m</td><td class="small dim">랙 전장 33.9 m → 절반 이상이 삼각</td></tr>
+      <tr><td>승강 y</td><td class="n">50 m/min = 0.8333 m/s</td><td class="n">0.5 m/s²</td><td class="n">1.389 m</td><td class="small dim">거의 모든 승강이 사다리꼴</td></tr>
+      <tr><td>이재 t_ü</td><td class="n">8.0 s / 회</td><td class="n">—</td><td class="n">—</td><td class="small dim">지정값 (계산 아님)</td></tr>
+      <tr><td>정지·위치결정</td><td class="n">1.0 s / 이동</td><td class="n">—</td><td class="n">—</td><td class="small dim">이동 1회마다 가산</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note warn"><b>크레인 제원은 도면에 없습니다.</b> 위 값은 차체 저장 설비 Rev.0 계산서에서 그대로 가져왔습니다. <strong>이 설비의 실제 스펙서로 반드시 확인해야 합니다.</strong> 특히 승강 속도가 결과를 지배합니다(8절).</div>
+</section>
+
+<!-- 4 -->
+<section id="s4">
+  <h2><span class="n">4</span><span>구간별 이동시간</span></h2>
+  <p class="sub">주행과 승강은 동시에 움직이므로 구간 시간은 둘 중 <strong>느린 쪽</strong>이 됩니다(체비셰프). 어느 축이 지배하는지도 함께 적었습니다.</p>
+  <div class="tw"><table>
+    <thead><tr><th>구간</th><th class="n">Δx [m]</th><th class="n">t<sub>x</sub> [s]</th><th>프로파일</th><th class="n">Δy [m]</th><th class="n">t<sub>y</sub> [s]</th><th>프로파일</th><th class="n">max [s]</th><th>지배축</th></tr></thead>
+    <tbody>
+      <tr><td class="k">E → P1</td><td class="n">30.295</td><td class="n">17.68</td><td class="small">사다리꼴</td><td class="n">4.083</td><td class="n">6.57</td><td class="small">사다리꼴</td><td class="n"><strong>17.68</strong></td><td class="small">주행</td></tr>
+      <tr><td class="k">P1 → P2</td><td class="n">15.820</td><td class="n">12.58</td><td class="small">삼각</td><td class="n">7.467</td><td class="n">10.63</td><td class="small">사다리꼴</td><td class="n"><strong>12.58</strong></td><td class="small">주행</td></tr>
+      <tr><td class="k">P2 → A</td><td class="n">14.475</td><td class="n">12.03</td><td class="small">삼각</td><td class="n">1.700</td><td class="n">3.71</td><td class="small">사다리꼴</td><td class="n"><strong>12.03</strong></td><td class="small">주행</td></tr>
+      <tr><td class="k">A → E (공차 복귀)</td><td class="n">0.000</td><td class="n">0.00</td><td class="small">—</td><td class="n">13.250</td><td class="n">17.57</td><td class="small">사다리꼴</td><td class="n"><strong>17.57</strong></td><td class="small err">승강</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note stop"><b>복귀 구간이 전체의 18%입니다.</b> 입고구가 상부 14.75 m, 출고구가 하부 1.5 m로 갈려 있어, 출고를 마치고 입고구로 돌아가려면 13.25 m를 승강만으로 올라가야 합니다(17.57 s). 이 구간은 주행이 전혀 도와주지 못합니다. 7절에서 이것이 운전 방식 선택을 좌우합니다.</div>
+</section>
+
+<!-- 5 -->
+<section id="s5">
+  <h2><span class="n">5</span><span>복합사이클과 이용률</span></h2>
+  <p class="sub">입고 1건과 출고 1건을 한 번의 왕복으로 묶는 복합사이클(DC)입니다. 이재는 4회(입고 픽업·저장·반출 픽업·출고 적치), 정지·위치결정은 이동 4회분입니다.</p>
+  <div class="tw"><table>
+    <thead><tr><th>구성</th><th>내역</th><th class="n">시간 [s]</th><th class="n">비중</th></tr></thead>
+    <tbody>
+      <tr><td class="k">E → P1</td><td class="small dim">입고구 → 저장 대표점</td><td class="n">17.68</td><td class="n">18.4%</td></tr>
+      <tr><td class="k">P1 → P2</td><td class="small dim">저장 대표점 → 반출 대표점</td><td class="n">12.58</td><td class="n">13.1%</td></tr>
+      <tr><td class="k">P2 → A</td><td class="small dim">반출 대표점 → 출고구</td><td class="n">12.03</td><td class="n">12.6%</td></tr>
+      <tr><td class="k">이재 4회</td><td class="small dim">8.0 × 4</td><td class="n">32.00</td><td class="n">33.4%</td></tr>
+      <tr><td class="k">정지·위치결정 4회</td><td class="small dim">1.0 × 4</td><td class="n">4.00</td><td class="n">4.2%</td></tr>
+      <tr><td class="k">A → E 공차 복귀</td><td class="small dim">출고구 → 차기 입고구</td><td class="n">17.57</td><td class="n">18.3%</td></tr>
+      <tr class="sum"><td>DC 사이클</td><td class="small dim">FEM 2점법</td><td class="n">95.85</td><td class="n">100%</td></tr>
+    </tbody>
+  </table></div>
+  <div class="eq">통로당 요구  35 쌍/h
+시간 수요 D = 35 × 95.85          = 3,355 s/h
+시간 공급 S = 3,600 × η(0.9)      = 3,240 s/h
+이용률   U = D / S                = <b>103.5 %</b>
+1대 능력   = S / 95.85            = 33.80 쌍/h   ← 요구 35 쌍/h 미달
+필요 대수  = U                    = 1.035 → 통로당 1대로는 여유 없음</div>
+  <p>이재만으로 사이클의 <strong>3분의 1</strong>을 씁니다. 이재시간을 8.0초에서 1초 줄이면 사이클이 4초 짧아져 이용률이 약 4% 개선됩니다. 실측값 확인이 중요한 이유입니다.</p>
+</section>
+
+<!-- 6 -->
+<section id="s6">
+  <h2><span class="n">6</span><span>세 가지 방법 대조</span></h2>
+  <p class="sub">같은 조건(임의 저장 · 임의 반출 · 오래된 순 페어링)에서 서로 독립적인 세 방법이 같은 답을 내는지 확인했습니다. 이것이 이 계산을 믿을 수 있는 근거입니다.</p>
+  <div class="compare">
+    <div><div class="m">FEM 9.851 2점법</div><div class="v">95.85 s</div><div class="d">대표점 P1·P2 손계산</div></div>
+    <div><div class="m">셀 전수 열거</div><div class="v">95.47 s</div><div class="d">72셀 · 셀쌍 5,184개 평균</div></div>
+    <div class="hero"><div class="m">시뮬레이션 (5회 평균)</div><div class="v">95.91 s</div><div class="d">±0.27 · 263 사이클 실측</div></div>
+  </div>
+  <p><strong>편차 0.5% 이내</strong>로 일치합니다. FEM의 2점 근사가 이 랙 형상에서 충분히 정확하다는 뜻이고, 동시에 시뮬레이션 엔진이 규격대로 계산하고 있다는 뜻이기도 합니다.</p>
+  <div class="tw"><table>
+    <thead><tr><th>전수 열거 내역</th><th class="n">평균 [s]</th><th class="n">최소</th><th class="n">최대</th></tr></thead>
+    <tbody>
+      <tr><td>E → 셀 (72개)</td><td class="n">14.87</td><td class="n">7.75</td><td class="n">19.03</td></tr>
+      <tr><td>셀 → 셀 (5,184쌍)</td><td class="n">11.72</td><td class="n">—</td><td class="n">—</td></tr>
+      <tr><td>셀 → A (72개)</td><td class="n">15.32</td><td class="n">7.75</td><td class="n">19.07</td></tr>
+      <tr class="sum"><td>+ 이재 32 + 부대 4 + 복귀 17.57</td><td class="n">95.47</td><td class="n"></td><td class="n"></td></tr>
+    </tbody>
+  </table></div>
+  <p class="small dim">셀별 이동시간 72행은 <span class="mono">docs/TC_셀별_이동시간.csv</span>에 있습니다. 엑셀에서 열어 개별 셀 단위로 대조하실 수 있습니다.</p>
+</section>
+
+<!-- 7 -->
+<section id="s7">
+  <h2><span class="n">7</span><span>구성별 시뮬레이션 결과</span></h2>
+  <p class="sub">8시간 운전 × 5회 반복, 워밍업 1시간 제외. 가동률은 크레인이 실제로 일한 시간 비율입니다(고장·정비 제외). 괄호는 95% 신뢰구간.</p>
+  <div class="tw"><table>
+    <thead><tr><th>구성</th><th class="n">가동률</th><th class="n">달성률</th><th class="n">처리 건/h</th><th class="n">대기 입/출 [s]</th><th class="n">라인 정지</th><th>판정</th></tr></thead>
+    <tbody>
+      <tr><td>1통로 · DC</td><td class="n">100.0</td><td class="n err">53.6 ±0.3</td><td class="n">75.1</td><td class="n">7,475 / 7,548</td><td class="n err">420 분</td><td class="err">불가</td></tr>
+      <tr><td>2통로 · DC · 임의 규칙</td><td class="n warnc">92.7 ±1.0</td><td class="n ok">100.0 ±0.2</td><td class="n">70.1</td><td class="n">36 / 58</td><td class="n">0</td><td class="warnc">성립 · 여유 없음</td></tr>
+      <tr><td><strong>2통로 · DC · 최근접 규칙</strong></td><td class="n ok">72.7 ±3.2</td><td class="n ok">99.9 ±0.3</td><td class="n">70.0</td><td class="n">30 / 39</td><td class="n">0</td><td class="ok">권장</td></tr>
+      <tr><td>2통로 · SC-return (복귀 운전)</td><td class="n">100.0</td><td class="n err">89.9 ±0.8</td><td class="n">63.0</td><td class="n">1,678 / 1,702</td><td class="n err">420 분</td><td class="err">불가</td></tr>
+      <tr><td>3통로 · DC</td><td class="n">61.8 ±0.8</td><td class="n ok">100.0 ±0.3</td><td class="n">46.7</td><td class="n">32 / 51</td><td class="n">0</td><td class="dim">과투자</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 style="font-size:15px;font-weight:600;margin:24px 0 6px">읽어야 할 세 가지</h3>
+  <div class="note stop"><b>복귀 운전(SC-return)은 쓰면 안 됩니다.</b> 작업마다 정위치로 돌아가면 4절의 13.25 m 승강이 매번 낭비됩니다. 같은 2통로인데 달성률이 89.9%로 떨어지고 라인이 7시간 멈춥니다.</div>
+  <div class="note"><b>저장·반출 위치 규칙이 설비 대수만큼 중요합니다.</b> 빈 셀을 아무 데나 쓰면 가동률 92.7%, 최근접 셀을 쓰면 72.7%입니다. <strong>같은 하드웨어로 20%p 차이</strong>가 납니다. 여기에 가동률 η 0.9를 얹으면 전자는 이용률 103%로 넘치고, 후자는 81%로 여유가 남습니다.</div>
+  <div class="note warn"><b>이 부하에서는 복합사이클이 거의 성립하지 않습니다.</b> 2통로에서 486회 중 DC로 묶인 것은 4회뿐이었습니다. 통로당 35+35 JPH면 크레인이 일을 마칠 때 보통 한쪽 작업만 밀려 있기 때문입니다. 계산서가 전제하는 “복합사이클 페어링”은 <strong>1통로처럼 포화된 경우에만</strong> 실효가 있습니다.</div>
+</section>
+
+<!-- 8 -->
+<section id="s8">
+  <h2><span class="n">8</span><span>가정과 확인 필요 사항</span></h2>
+  <p class="sub">도면에 없어 가정한 값입니다. 위쪽 세 개가 결과를 크게 바꿉니다.</p>
+  <div class="tw"><table>
+    <thead><tr><th class="n">No</th><th>항목</th><th>현재 가정</th><th>영향</th><th>확인처</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td><strong>승강 속도·가속도</strong></td><td class="k">50 m/min · 0.5 m/s²</td><td class="small">복귀 17.57 s가 사이클의 18%. 승강이 빠르면 여유가 크게 늘어남</td><td class="small dim">STC 스펙서</td></tr>
+      <tr><td class="n">2</td><td><strong>이재시간 t_ü</strong></td><td class="k">8.0 s / 회</td><td class="small">사이클의 33%. 1초 줄면 이용률 4% 개선</td><td class="small dim">제작사 실측</td></tr>
+      <tr><td class="n">3</td><td><strong>입·출고구 위치</strong></td><td class="k">둘 다 x = 39.8 m, y = 14.75 / 1.5 m</td><td class="small">타워 내 정확한 좌표를 도면에서 특정하지 못함</td><td class="small dim">레이아웃 도면</td></tr>
+      <tr><td class="n">4</td><td>주행 속도·가속도</td><td class="k">175 m/min · 0.4 m/s²</td><td class="small">구간 대부분이 삼각 프로파일이라 가속도가 지배</td><td class="small dim">STC 스펙서</td></tr>
+      <tr><td class="n">5</td><td>가동률 η</td><td class="k">0.90</td><td class="small">이용률에 직접 비례</td><td class="small dim">보전 실적</td></tr>
+      <tr><td class="n">6</td><td>최하단 레벨 높이</td><td class="k">1,500 mm</td><td class="small">도면 하단 치수로 읽음</td><td class="small dim">설비 도면</td></tr>
+      <tr><td class="n">7</td><td>도착 패턴</td><td class="k">takt ± 10%</td><td class="small">라인 takt의 실제 산포</td><td class="small dim">생산기술</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>1·2번이 확정되면 결론이 바뀔 수 있습니다.</b> 2통로 성립 여부가 이용률 103%(임의 규칙) 근처에 걸려 있어, 승강 속도나 이재시간이 가정보다 불리하면 3통로가 필요해질 수 있습니다. 반대로 유리하면 임의 규칙으로도 여유가 생깁니다.</div>
+</section>
+
+<!-- 9 -->
+<section id="s9">
+  <h2><span class="n">9</span><span>결론</span></h2>
+  <ul>
+    <li><strong>도면의 2통로 구성이 최소입니다.</strong> 1통로는 달성률 53.6%로 요구 물동량의 절반만 처리합니다.</li>
+    <li><strong>2통로는 성립하지만 운전 방식이 여유를 좌우합니다.</strong> 최근접 저장·반출 규칙에서 가동률 72.7%(이용률 81%)로 여유가 있고, 임의 규칙에서는 92.7%(이용률 103%)로 여유가 없습니다.</li>
+    <li><strong>복귀 운전은 배제해야 합니다.</strong> 입출고구가 상·하로 갈린 이 배치에서는 치명적입니다.</li>
+    <li><strong>계산 자체는 검증되었습니다.</strong> FEM 2점법 · 셀 전수 열거 · 시뮬레이션 세 방법이 0.5% 이내로 일치합니다.</li>
+    <li><strong>다만 크레인 제원이 가정값입니다.</strong> 8절 1·2번을 확인하기 전까지는 이 결론을 잠정으로 두시는 편이 안전합니다.</li>
+  </ul>
+</section>
+
+<p class="end">TC 저장 설비 검산 시트 · 2026-09-08 · 산출 도구 STC AS/RS 시뮬레이터 v0.1 (프리셋 <span class="mono">TC 저장 설비 — 도면 6×6 × 2통로</span>) · 셀별 원자료 <span class="mono">docs/TC_셀별_이동시간.csv</span></p>
+
+</div>
