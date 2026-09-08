@@ -96,8 +96,8 @@ const STCValidate = (() => {
     if (!num(rk.x0)) err('rack.x0가 필요합니다', F('rack.x0'));
     if (!(rk.length > 0)) err('rack.length는 양수여야 합니다', F('rack.length'));
     if (!(rk.height > 0)) err('rack.height는 양수여야 합니다', F('rack.height'));
-    if (rk.bayX && rk.bayX.length !== rk.bays) err(`rack.bayX 길이(${rk.bayX.length})가 bays(${rk.bays})와 다릅니다`, F('rack.bays'));
-    if (rk.levelY && rk.levelY.length !== rk.levels) err(`rack.levelY 길이(${rk.levelY.length})가 levels(${rk.levels})와 다릅니다`, F('rack.levels'));
+    if (rk.bayX && rk.bayX.length !== rk.bays) err(`베이 중심 x 좌표 ${rk.bayX.length}개가 베이 수 ${rk.bays}와 다릅니다 — 좌표를 지우면 균등 분할로 자동 계산합니다`, F('rack.bayX'));
+    if (rk.levelY && rk.levelY.length !== rk.levels) err(`단 높이 y 좌표 ${rk.levelY.length}개가 단 수 ${rk.levels}와 다릅니다 — 좌표를 지우면 균등 분할로 자동 계산합니다`, F('rack.levelY'));
     if (!(rk.initialFill >= 0 && rk.initialFill <= 1)) err('rack.initialFill은 0~1이어야 합니다', F('rack.initialFill'));
     if (rk.depth && rk.depth !== 1) warn('depth > 1 (Double Deep 재배치)은 이 버전에서 모델링하지 않습니다 — single deep으로 취급', { type: 'json' });
 

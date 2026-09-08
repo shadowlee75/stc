@@ -47,6 +47,7 @@ nav.tabs button small{display:block; font-size:10px; font-weight:400; color:var(
 
 /* ---------- 폼 ---------- */
 .fgrid{display:grid; grid-template-columns:1fr 1fr; gap:6px 14px}
+.fgrid .field.wide{grid-column:1/-1}
 .field{display:flex; flex-direction:column; gap:2px}
 .field label{font-size:11px; color:var(--dim)}
 .field label .u{color:var(--muted)}
@@ -1094,8 +1095,8 @@ const STCValidate = (() => {
     if (!num(rk.x0)) err('rack.x0가 필요합니다', F('rack.x0'));
     if (!(rk.length > 0)) err('rack.length는 양수여야 합니다', F('rack.length'));
     if (!(rk.height > 0)) err('rack.height는 양수여야 합니다', F('rack.height'));
-    if (rk.bayX && rk.bayX.length !== rk.bays) err(`rack.bayX 길이(${rk.bayX.length})가 bays(${rk.bays})와 다릅니다`, F('rack.bays'));
-    if (rk.levelY && rk.levelY.length !== rk.levels) err(`rack.levelY 길이(${rk.levelY.length})가 levels(${rk.levels})와 다릅니다`, F('rack.levels'));
+    if (rk.bayX && rk.bayX.length !== rk.bays) err(`베이 중심 x 좌표 ${rk.bayX.length}개가 베이 수 ${rk.bays}와 다릅니다 — 좌표를 지우면 균등 분할로 자동 계산합니다`, F('rack.bayX'));
+    if (rk.levelY && rk.levelY.length !== rk.levels) err(`단 높이 y 좌표 ${rk.levelY.length}개가 단 수 ${rk.levels}와 다릅니다 — 좌표를 지우면 균등 분할로 자동 계산합니다`, F('rack.levelY'));
     if (!(rk.initialFill >= 0 && rk.initialFill <= 1)) err('rack.initialFill은 0~1이어야 합니다', F('rack.initialFill'));
     if (rk.depth && rk.depth !== 1) warn('depth > 1 (Double Deep 재배치)은 이 버전에서 모델링하지 않습니다 — single deep으로 취급', { type: 'json' });
 
@@ -3297,7 +3298,7 @@ const STCView3D = (() => {
 
 if (typeof module !== 'undefined' && module.exports) module.exports = STCView3D;
 </script>
-<script>window.STC_ARTIFACT = true; window.STC_BUILD = {"version":"0.1.0","builtAt":"2026-09-08T02:46:59.007Z","three":"r128 sha256:9274bbcec8d9","modules":["kernel.js","rng.js","kin.js","stats.js","validate.js","presets.js","fem9851.js","engine.js","optimizer.js","scene.js","charts.js","runner.js","view3d.js","app.js"]};</script>
+<script>window.STC_ARTIFACT = true; window.STC_BUILD = {"version":"0.1.0","builtAt":"2026-09-08T03:14:57.748Z","three":"r128 sha256:9274bbcec8d9","modules":["kernel.js","rng.js","kin.js","stats.js","validate.js","presets.js","fem9851.js","engine.js","optimizer.js","scene.js","charts.js","runner.js","view3d.js","app.js"]};</script>
 <script class="app" data-module="app.js">'use strict';
 /* ============================================================
  * STC 시뮬레이터 — 앱 (app.js): 탭 · 시나리오 편집 · 3D 재생 · 통계 · 실험기 · 최적화기 · 해석식 · 도움말
@@ -3437,6 +3438,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = STCView3D;
       { path: 'rack.initialFill', label: '초기 충전률', step: 0.05, min: 0, max: 1 },
       { path: 'rack.x0', label: '랙 시작 x0', unit: 'm', step: 0.1 }, { path: 'rack.length', label: '랙 길이 L', unit: 'm', step: 0.1, min: 0.1 },
       { path: 'rack.height', label: '랙 높이 H', unit: 'm', step: 0.1, min: 0.1 }, { path: 'rack.aisleLength', label: '통로 전장', unit: 'm', step: 0.1 },
+      { path: 'rack.bayX', label: '베이 중심 x 좌표', unit: 'm · 쉼표 구분, 비우면 균등 분할', type: 'list', wide: true },
+      { path: 'rack.levelY', label: '단 높이 y 좌표', unit: 'm · 쉼표 구분, 비우면 균등 분할', type: 'list', wide: true },
     ] },
     { grp: '크레인 — 주행 x', items: [
       { path: 'crane.axes.x.v', label: '정격속도', unit: 'm/min', step: 1, min: 1, ...mpm }, { path: 'crane.axes.x.a', label: '가속도', unit: 'm/s²', step: 0.05, min: 0.01 },
@@ -3475,8 +3478,9 @@ if (typeof module !== 'undefined' && module.exports) module.exports = STCView3D;
         let v = getPath(App.sc, f.path);
         if (f.nullZero && (v === null || v === undefined)) v = 0;
         const id = 'f_' + f.path.replace(/\./g, '_');
-        h += `<div class="field"><label>${esc(f.label)}${f.unit ? ' <span class="u">' + esc(f.unit) + '</span>' : ''}</label>`;
+        h += `<div class="field${f.wide ? ' wide' : ''}"><label>${esc(f.label)}${f.unit ? ' <span class="u">' + esc(f.unit) + '</span>' : ''}</label>`;
         if (f.type === 'select') h += `<select id="${id}" data-path="${f.path}">${f.options.map(o => `<option value="${o[0]}"${String(o[0]) === String(v) ? ' selected' : ''}>${esc(o[1])}</option>`).join('')}</select>`;
+        else if (f.type === 'list') h += `<input type="text" id="${id}" data-path="${f.path}" value="${Array.isArray(v) ? v.join(', ') : ''}" placeholder="비우면 균등 분할로 자동 계산">`;
         else { const ui = f.toUI ? f.toUI(+v || 0) : (+v || 0); h += `<input type="number" id="${id}" data-path="${f.path}" value="${Number.isFinite(ui) ? +ui.toFixed(6) : ''}" step="${f.step || 'any'}"${f.min !== undefined ? ' min="' + f.min + '"' : ''}${f.max !== undefined ? ' max="' + f.max + '"' : ''}>`; }
         h += '</div>';
       }
@@ -3487,7 +3491,10 @@ if (typeof module !== 'undefined' && module.exports) module.exports = STCView3D;
       const f = FIELDS.flatMap(g => g.items).find(x => x.path === el.dataset.path);
       let v;
       if (f.type === 'select') v = f.num ? +el.value : el.value;
-      else { const n = parseFloat(el.value); if (!Number.isFinite(n)) return; v = f.fromUI ? f.fromUI(n) : n; if (f.nullZero && v === 0) v = null; }
+      else if (f.type === 'list') {
+        const arr = el.value.split(',').map(x => parseFloat(x.trim())).filter(x => Number.isFinite(x));
+        v = arr.length ? arr : null;
+      } else { const n = parseFloat(el.value); if (!Number.isFinite(n)) return; v = f.fromUI ? f.fromUI(n) : n; if (f.nullZero && v === 0) v = null; }
       setPath(App.sc, f.path, v);
       if (f.path === 'rack.bays' && App.sc.rack.bayX && App.sc.rack.bayX.length !== App.sc.rack.bays) App.sc.rack.bayX = null;
       if (f.path === 'rack.levels' && App.sc.rack.levelY && App.sc.rack.levelY.length !== App.sc.rack.levels) App.sc.rack.levelY = null;

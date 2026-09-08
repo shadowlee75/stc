@@ -149,8 +149,15 @@ for (const p of P.list) {
   ok(av && av.path === 'crane.axes.x.v', '축 속도 오류 → 해당 폼 필드');
   const sc9 = P.carBodyRev0();
   sc9.rack.levels = 4;                       // levelY 길이 6 과 불일치
-  const lv = tgt(V.validate(sc9).issues, /levelY 길이/);
-  ok(lv && lv.path === 'rack.levels', 'levelY 불일치 → 단 수 필드');
+  const lv = tgt(V.validate(sc9).issues, /단 높이 y 좌표/);
+  ok(lv && lv.path === 'rack.levelY', 'levelY 불일치 → 단 높이 좌표 칸');
+  const sc9b = P.get('tcStorageDwg');
+  sc9b.rack.bays = 4;                        // bayX 길이 6 과 불일치
+  const bx = tgt(V.validate(sc9b).issues, /베이 중심 x 좌표/);
+  ok(bx && bx.path === 'rack.bayX', 'bayX 불일치 → 베이 좌표 칸');
+  const sc9c = P.get('tcStorageDwg');
+  sc9c.rack.bayX = null; sc9c.rack.levelY = null;   // 비우면 균등 분할, 오류 없음
+  ok(V.validate(sc9c).ok, '좌표를 비우면 균등 분할로 통과');
 
   // 존 관련 오류는 zone 열을 가리킨다
   const sc10 = P.carBodyRev0();

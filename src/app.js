@@ -137,6 +137,8 @@
       { path: 'rack.initialFill', label: '초기 충전률', step: 0.05, min: 0, max: 1 },
       { path: 'rack.x0', label: '랙 시작 x0', unit: 'm', step: 0.1 }, { path: 'rack.length', label: '랙 길이 L', unit: 'm', step: 0.1, min: 0.1 },
       { path: 'rack.height', label: '랙 높이 H', unit: 'm', step: 0.1, min: 0.1 }, { path: 'rack.aisleLength', label: '통로 전장', unit: 'm', step: 0.1 },
+      { path: 'rack.bayX', label: '베이 중심 x 좌표', unit: 'm · 쉼표 구분, 비우면 균등 분할', type: 'list', wide: true },
+      { path: 'rack.levelY', label: '단 높이 y 좌표', unit: 'm · 쉼표 구분, 비우면 균등 분할', type: 'list', wide: true },
     ] },
     { grp: '크레인 — 주행 x', items: [
       { path: 'crane.axes.x.v', label: '정격속도', unit: 'm/min', step: 1, min: 1, ...mpm }, { path: 'crane.axes.x.a', label: '가속도', unit: 'm/s²', step: 0.05, min: 0.01 },
@@ -175,8 +177,9 @@
         let v = getPath(App.sc, f.path);
         if (f.nullZero && (v === null || v === undefined)) v = 0;
         const id = 'f_' + f.path.replace(/\./g, '_');
-        h += `<div class="field"><label>${esc(f.label)}${f.unit ? ' <span class="u">' + esc(f.unit) + '</span>' : ''}</label>`;
+        h += `<div class="field${f.wide ? ' wide' : ''}"><label>${esc(f.label)}${f.unit ? ' <span class="u">' + esc(f.unit) + '</span>' : ''}</label>`;
         if (f.type === 'select') h += `<select id="${id}" data-path="${f.path}">${f.options.map(o => `<option value="${o[0]}"${String(o[0]) === String(v) ? ' selected' : ''}>${esc(o[1])}</option>`).join('')}</select>`;
+        else if (f.type === 'list') h += `<input type="text" id="${id}" data-path="${f.path}" value="${Array.isArray(v) ? v.join(', ') : ''}" placeholder="비우면 균등 분할로 자동 계산">`;
         else { const ui = f.toUI ? f.toUI(+v || 0) : (+v || 0); h += `<input type="number" id="${id}" data-path="${f.path}" value="${Number.isFinite(ui) ? +ui.toFixed(6) : ''}" step="${f.step || 'any'}"${f.min !== undefined ? ' min="' + f.min + '"' : ''}${f.max !== undefined ? ' max="' + f.max + '"' : ''}>`; }
         h += '</div>';
       }
@@ -187,7 +190,10 @@
       const f = FIELDS.flatMap(g => g.items).find(x => x.path === el.dataset.path);
       let v;
       if (f.type === 'select') v = f.num ? +el.value : el.value;
-      else { const n = parseFloat(el.value); if (!Number.isFinite(n)) return; v = f.fromUI ? f.fromUI(n) : n; if (f.nullZero && v === 0) v = null; }
+      else if (f.type === 'list') {
+        const arr = el.value.split(',').map(x => parseFloat(x.trim())).filter(x => Number.isFinite(x));
+        v = arr.length ? arr : null;
+      } else { const n = parseFloat(el.value); if (!Number.isFinite(n)) return; v = f.fromUI ? f.fromUI(n) : n; if (f.nullZero && v === 0) v = null; }
       setPath(App.sc, f.path, v);
       if (f.path === 'rack.bays' && App.sc.rack.bayX && App.sc.rack.bayX.length !== App.sc.rack.bays) App.sc.rack.bayX = null;
       if (f.path === 'rack.levels' && App.sc.rack.levelY && App.sc.rack.levelY.length !== App.sc.rack.levels) App.sc.rack.levelY = null;
