@@ -402,7 +402,25 @@ hr.rule{border:none; border-top:1px solid var(--line); margin:34px 0}
 <section id="s4">
   <h2>4</h2>
   <p class="title">우리 설비 숫자 넣기</p>
-  <p><span class="ui">① 모델</span> 왼쪽 폼의 항목을 위에서부터 설명합니다. 단위는 화면에도 적혀 있습니다.</p>
+  <h3>먼저, 프리셋 5개 중 무엇으로 시작하나</h3>
+  <p>프리셋 목록은 두 갈래입니다. <strong>앞의 둘은 실제 검토용</strong>, <strong>뒤의 셋은 프로그램이 제대로 계산하는지 확인하는 시험용</strong>입니다. 평소에는 앞의 둘만 쓰시면 됩니다.</p>
+
+  <div class="tw"><table class="plain">
+    <thead><tr><th>프리셋</th><th>셀</th><th>무엇인가</th><th>언제 씁니다</th></tr></thead>
+    <tbody>
+      <tr><td><strong>차체 저장 설비 Rev.0 (5×6)</strong></td><td>30</td><td>계산서 Rev.0의 실제 설비. 입고 93 · 출고 92 JPH, 이재 8.0 s, η 0.9, 복합사이클 운전</td><td><strong>지금 검토 중인 설비.</strong> 여기서 시작해 대수·조닝·운영 방식을 바꿔 봅니다</td></tr>
+      <tr><td><strong>범용 20×10</strong></td><td>400</td><td>사내 계산기 <code>stc_calculator.py</code> 기본 입력값. 양측 랙, 코너 한 곳에서 입출고(FEM Case 1). <strong>5개 중 유일하게 저속 접근·제어 지연이 켜져 있습니다</strong></td><td>차체 설비와 전혀 다른 <strong>새 설비를 처음부터 잡을 때</strong>. 예전 계산기 결과와 맞춰 볼 때</td></tr>
+      <tr><td>검증용 대형 랙 50×15</td><td>750</td><td>저속·지연을 모두 끄고 부하도 낮춰 사이클타임만 깨끗하게 재는 조건</td><td><strong>“해석식과 5% 안에 드는가”를 판정하는 기준.</strong> 실제 결과 SC +3.2%, DC −2.0%</td></tr>
+      <tr><td>검증용 Bozer &amp; White b=1</td><td>10,000</td><td>학계 표준식 <code>E(SC)/T = 1 + b²/3</code> 재현용. 가속도를 사실상 무한으로 둬 등속 이동으로 만듦</td><td>엔진의 물리가 <strong>학계 표준과 맞는지</strong>. 이론 133.3초 대 시뮬 134.8초(+1.1%)</td></tr>
+      <tr><td>검증용 Bozer &amp; White b=0.5</td><td>5,000</td><td>위와 같되 가로로 납작한 랙(형상비 0.5)</td><td>납작한 랙에서도 맞는지. 이론 108.3초 대 시뮬 107.2초(−1.0%)</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note"><b>시험용 3개는 OK/NG 판정에 의미가 없습니다.</b> 실제 설비가 아니라 계산이 맞는지 보려고 만든 조건이기 때문입니다. 보실 것은 <span class="ui">⑥ 해석식</span> 탭 맨 아래 <strong>Δ(차이)</strong> 뿐입니다. 그 값이 ±5% 안이면 프로그램이 정상입니다.</div>
+
+  <div class="note warn"><b>작은 랙에서 해석식과 5~8% 벌어지는 것은 정상입니다.</b> FEM의 대표점 P1·P2 방식은 랙을 연속된 면으로 가정하는데, 차체 설비는 30셀뿐이라 칸 단위 이산화 오차가 남습니다. 그래서 5% 기준은 셀이 750개인 대형 랙 프리셋으로 판정합니다.</div>
+
+  <p style="margin-top:26px"><span class="ui">① 모델</span> 왼쪽 폼의 항목을 위에서부터 설명합니다. 단위는 화면에도 적혀 있습니다.</p>
 
   <h3>실행 조건</h3>
   <div class="tw"><table>
