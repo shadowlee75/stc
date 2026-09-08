@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STC 시뮬레이터 사용설명서</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap">
+<style>
+:root{
+  --paper:#fbfaf8; --paper2:#f2efe9; --paper3:#e9e5dc;
+  --ink:#14161a; --dim:#5a5f68; --muted:#8a8b85;
+  --line:#dcd8d0; --rule:#14161a;
+  --blue:#002FA7; --blue-soft:#eaeefa;
+  --ok:#0a7a3c; --err:#b3001b; --warn:#a05c00;
+  --st-idle:#c3c2b7; --st-move:#2a78d6; --st-load:#1baf7a; --st-fork:#eda100; --st-block:#d03b3b;
+  --sans:"IBM Plex Sans KR","Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",Consolas,"Courier New",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#16171a; --paper2:#1e2024; --paper3:#26292e;
+    --ink:#f2f1ee; --dim:#a9adb5; --muted:#83868d;
+    --line:#2e3238; --rule:#f2f1ee;
+    --blue:#7f9dff; --blue-soft:#1c2436;
+    --ok:#3cc26e; --err:#ff7070; --warn:#e0a33a;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#16171a; --paper2:#1e2024; --paper3:#26292e;
+  --ink:#f2f1ee; --dim:#a9adb5; --muted:#83868d;
+  --line:#2e3238; --rule:#f2f1ee;
+  --blue:#7f9dff; --blue-soft:#1c2436;
+  --ok:#3cc26e; --err:#ff7070; --warn:#e0a33a;
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-weight:400; font-size:15px; line-height:1.72;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{text-wrap:balance; line-height:1.3}
+a{color:var(--blue); text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+
+/* ---------- 골격 ---------- */
+.shell{display:grid; grid-template-columns:216px minmax(0,1fr); gap:0; max-width:1180px; margin:0 auto}
+.spine{
+  position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+  border-right:1px solid var(--line); padding:34px 20px 40px 24px;
+}
+.spine .brand{font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:16px}
+.spine ol{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px}
+.spine a{
+  display:grid; grid-template-columns:22px 1fr; gap:8px; align-items:baseline;
+  color:var(--dim); text-decoration:none; font-size:13.5px; padding:4px 0; border-bottom:1px solid transparent;
+}
+.spine a:hover{color:var(--ink)}
+.spine a .n{font-family:var(--mono); font-size:11.5px; color:var(--muted)}
+.main{padding:34px 40px 120px; min-width:0}
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .spine{position:static; height:auto; border-right:none; border-bottom:1px solid var(--line); padding:22px 22px 18px}
+  .spine ol{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:0 16px}
+  .main{padding:26px 22px 80px}
+}
+
+/* ---------- 표제 ---------- */
+.folio{border-bottom:2px solid var(--rule); padding-bottom:20px; margin-bottom:30px}
+.folio .kicker{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--blue); font-weight:600}
+.folio h1{font-size:clamp(28px,4.4vw,40px); font-weight:700; letter-spacing:-.022em; margin:8px 0 6px}
+.folio .lede{font-size:16.5px; color:var(--dim); max-width:60ch; font-weight:300}
+.folio .meta{display:flex; flex-wrap:wrap; gap:0 26px; margin-top:16px; font-size:12.5px; color:var(--muted); font-family:var(--mono)}
+.folio .meta b{color:var(--ink); font-weight:600}
+
+section{max-width:70ch; margin-bottom:52px; scroll-margin-top:20px}
+section > h2{
+  font-size:12px; font-family:var(--mono); font-weight:600; letter-spacing:.11em; text-transform:uppercase;
+  color:var(--blue); padding-bottom:7px; border-bottom:1px solid var(--line); margin:0 0 6px;
+}
+section > .title{font-size:24px; font-weight:700; letter-spacing:-.018em; margin:0 0 14px}
+h3{font-size:16.5px; font-weight:600; margin:28px 0 8px; letter-spacing:-.01em}
+p{margin:0 0 13px}
+ul,ol{margin:0 0 13px; padding-left:21px}
+li{margin:4px 0}
+.tight li{margin:1px 0}
+code,.k{font-family:var(--mono); font-size:.875em; background:var(--paper2); padding:1px 5px; border-radius:2px}
+.ui{font-family:var(--mono); font-size:.86em; font-weight:600; color:var(--blue); background:var(--blue-soft); padding:1.5px 6px; border-radius:2px; white-space:nowrap}
+strong{font-weight:600}
+.dim{color:var(--dim)}
+.small{font-size:13px}
+
+/* ---------- 표 ---------- */
+.tw{overflow-x:auto; margin:14px 0 18px; border-bottom:1px solid var(--line)}
+table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:440px}
+th,td{text-align:left; padding:7px 12px 7px 0; border-bottom:1px solid var(--line); vertical-align:top}
+th{font-family:var(--mono); font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); font-weight:600; border-bottom:1px solid var(--rule); white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+td.n,th.n{font-variant-numeric:tabular-nums; text-align:right; padding-right:16px}
+td:first-child{font-family:var(--mono); font-size:12.5px; white-space:nowrap; padding-right:16px}
+table.plain td:first-child{font-family:var(--sans); font-size:13.5px; white-space:normal}
+
+/* ---------- 레시피 카드 ---------- */
+.recipe{border:1px solid var(--rule); padding:18px 20px 16px; margin:0 0 18px; background:var(--paper)}
+.recipe .when{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:600}
+.recipe h3{margin:5px 0 12px; font-size:18px; font-weight:700; letter-spacing:-.015em}
+.recipe ol{counter-reset:s; list-style:none; padding:0; margin:0}
+.recipe ol li{counter-increment:s; display:grid; grid-template-columns:24px 1fr; gap:11px; margin:0; padding:7px 0; border-top:1px solid var(--line)}
+.recipe ol li:first-child{border-top:none; padding-top:0}
+.recipe ol li::before{
+  content:counter(s); font-family:var(--mono); font-size:11.5px; font-weight:600;
+  color:var(--paper); background:var(--blue); width:20px; height:20px; border-radius:50%;
+  display:grid; place-items:center; margin-top:3px;
+}
+.recipe .out{margin-top:13px; padding-top:11px; border-top:1px solid var(--line); font-size:13.5px; color:var(--dim)}
+.recipe .out b{color:var(--ink); font-weight:600}
+
+/* ---------- 콜아웃 ---------- */
+.note{border-left:3px solid var(--blue); background:var(--paper2); padding:11px 15px; margin:16px 0; font-size:14px}
+.note.warn{border-left-color:var(--warn)}
+.note.stop{border-left-color:var(--err)}
+.note b{font-weight:600}
+
+/* ---------- 화면 지도 ---------- */
+figure{margin:18px 0 20px}
+figure svg{display:block; width:100%; height:auto; border:1px solid var(--line)}
+figcaption{font-size:12.5px; color:var(--muted); margin-top:8px; font-family:var(--mono)}
+.map-legend{list-style:none; padding:0; margin:14px 0 0; display:grid; gap:7px}
+.map-legend li{display:grid; grid-template-columns:22px 1fr; gap:10px; align-items:baseline; font-size:14px; margin:0}
+.map-legend .b{font-family:var(--mono); font-size:11px; font-weight:600; color:var(--paper); background:var(--blue); width:19px; height:19px; border-radius:50%; display:grid; place-items:center}
+
+/* ---------- 상태 색 범례 ---------- */
+.swatches{list-style:none; padding:0; margin:12px 0 16px; display:grid; gap:6px}
+.swatches li{display:grid; grid-template-columns:15px 1fr; gap:11px; align-items:baseline; font-size:14px; margin:0}
+.swatches i{width:13px; height:13px; display:block; margin-top:4px}
+
+/* ---------- 판정 기준 ---------- */
+.verdict-list{list-style:none; padding:0; margin:12px 0 16px; display:grid; gap:0; border-top:1px solid var(--line)}
+.verdict-list li{display:grid; grid-template-columns:auto 1fr; gap:12px; padding:9px 0; border-bottom:1px solid var(--line); margin:0; align-items:baseline}
+.verdict-list .chk{color:var(--ok); font-weight:700; font-family:var(--mono); font-size:13px}
+.verdict-list .lbl{font-weight:600}
+.verdict-list .exp{display:block; color:var(--dim); font-size:13.5px; font-weight:400; margin-top:1px}
+
+hr.rule{border:none; border-top:1px solid var(--line); margin:34px 0}
+.end{border-top:2px solid var(--rule); padding-top:14px; font-size:12.5px; color:var(--muted); font-family:var(--mono); max-width:70ch}
+</style>
+</head>
+<body>
+
+<div class="shell">
+<nav class="spine" aria-label="목차">
+  <div class="brand">목차</div>
+  <ol>
+    <li><a href="#s0"><span class="n">0</span><span>5분 만에 시작</span></a></li>
+    <li><a href="#s1"><span class="n">1</span><span>화면 지도</span></a></li>
+    <li><a href="#s2"><span class="n">2</span><span>탭 7개, 언제 쓰나</span></a></li>
+    <li><a href="#s3"><span class="n">3</span><span>작업 레시피</span></a></li>
+    <li><a href="#s4"><span class="n">4</span><span>우리 설비 숫자 넣기</span></a></li>
+    <li><a href="#s5"><span class="n">5</span><span>결과 읽는 법</span></a></li>
+    <li><a href="#s6"><span class="n">6</span><span>자주 막히는 곳</span></a></li>
+    <li><a href="#s7"><span class="n">7</span><span>용어 사전</span></a></li>
+    <li><a href="#s8"><span class="n">8</span><span>파일과 저장</span></a></li>
+  </ol>
+</nav>
+
+<main class="main">
+
+<header class="folio">
+  <div class="kicker">사용설명서 · 처음 쓰는 사람용</div>
+  <h1>STC AS/RS 시뮬레이터</h1>
+  <p class="lede">스태커크레인 자동창고가 요구 물동량을 감당하는지, 감당 못 하면 몇 대가 필요한지를 화면에서 직접 돌려 보고 판정하는 프로그램입니다. 설치할 것이 없고, HTML 파일 하나를 더블클릭하면 열립니다.</p>
+  <div class="meta">
+    <span>대상 버전 <b>v0.1</b></span>
+    <span>작성 <b>2026-09-07</b></span>
+    <span>기준 규격 <b>FEM 9.851 준용</b></span>
+  </div>
+</header>
+
+<!-- ================= 0 ================= -->
+<section id="s0">
+  <h2>0</h2>
+  <p class="title">5분 만에 시작</p>
+  <p>아무것도 설정하지 않아도 <strong>차체 저장 설비 Rev.0</strong> 조건이 미리 들어 있습니다. 아래 세 번만 하면 첫 결과가 나옵니다.</p>
+
+  <div class="recipe">
+    <div class="when">첫 실행</div>
+    <h3>지금 설비가 1대로 되는지 본다</h3>
+    <ol>
+      <li><code>dist\STC_ASRS_시뮬레이터_v0.1.html</code> 파일을 더블클릭합니다. 크롬이나 엣지에서 열립니다.</li>
+      <li>맨 처음 보이는 <span class="ui">① 모델</span> 화면 오른쪽에 <strong>“검증 통과”</strong> 초록 글씨가 있는지 봅니다. 빨간 글씨가 있으면 그 문장이 원인입니다.</li>
+      <li>왼쪽 위 파란 버튼 <span class="ui">단일 실행 → ③ 통계</span> 를 누릅니다.</li>
+    </ol>
+    <div class="out"><b>나오는 것</b> · <span class="ui">③ 통계</span> 화면으로 넘어가면서 큰 글씨로 <b>OK</b> 또는 <b>NG</b> 판정이 뜨고, 그 아래에 왜 그런지 사유가 줄줄이 나옵니다. 기본 조건은 <b>NG</b>가 정상입니다. 크레인 1대로는 요구 물동량 185건/h를 감당하지 못한다는 것이 이 설비의 원래 결론입니다.</div>
+  </div>
+
+  <p>여기까지 되면 프로그램은 정상입니다. 다음으로 궁금한 것이 “<strong>그럼 몇 대가 필요한가</strong>”라면 <a href="#s3">3장 작업 레시피</a>의 레시피 B로 바로 가시면 됩니다.</p>
+</section>
+
+<!-- ================= 1 ================= -->
+<section id="s1">
+  <h2>1</h2>
+  <p class="title">화면 지도</p>
+  <p>화면은 늘 같은 구조입니다. 위쪽에 <strong>제목줄</strong>, 그 아래 <strong>탭 7개</strong>, 그리고 본문입니다. 본문은 탭에 따라 한 칸이거나 두 칸입니다.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 392" role="img" aria-label="프로그램 화면 구조 도해">
+      <rect x="0" y="0" width="760" height="392" fill="var(--paper)"></rect>
+
+      <!-- 제목줄 -->
+      <rect x="30" y="24" width="700" height="46" fill="var(--paper2)" stroke="var(--line)" stroke-width="1"></rect>
+      <text x="46" y="44" font-family="var(--sans)" font-size="14" font-weight="700" fill="var(--ink)">STC AS/RS 시뮬레이터</text>
+      <text x="46" y="60" font-family="var(--sans)" font-size="9.5" fill="var(--muted)">단일 통로 스태커크레인 이산사건 시뮬레이션</text>
+      <g fill="var(--paper)" stroke="var(--line)" stroke-width="1">
+        <rect x="470" y="34" width="60" height="26"></rect>
+        <rect x="532" y="34" width="60" height="26"></rect>
+        <rect x="594" y="34" width="60" height="26"></rect>
+        <rect x="656" y="34" width="58" height="26"></rect>
+      </g>
+      <text x="476" y="45" font-family="var(--mono)" font-size="6.5" fill="var(--muted)">시나리오</text>
+      <text x="538" y="45" font-family="var(--mono)" font-size="6.5" fill="var(--muted)">판정</text>
+      <text x="600" y="45" font-family="var(--mono)" font-size="6.5" fill="var(--muted)">실행기</text>
+      <text x="662" y="45" font-family="var(--mono)" font-size="6.5" fill="var(--muted)">빌드</text>
+      <text x="538" y="56" font-family="var(--sans)" font-size="9" font-weight="700" fill="var(--err)">NG</text>
+      <circle cx="556" cy="30" r="10" fill="var(--blue)"></circle>
+      <text x="556" y="33.5" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--paper)" text-anchor="middle">1</text>
+
+      <!-- 탭 -->
+      <rect x="30" y="70" width="700" height="34" fill="var(--paper)" stroke="var(--line)" stroke-width="1"></rect>
+      <rect x="30" y="70" width="86" height="34" fill="var(--blue-soft)"></rect>
+      <rect x="30" y="100" width="86" height="4" fill="var(--blue)"></rect>
+      <g font-family="var(--sans)" font-size="9.5" font-weight="600">
+        <text x="45" y="86" fill="var(--blue)">① 모델</text>
+        <text x="128" y="86" fill="var(--dim)">② 3D</text>
+        <text x="196" y="86" fill="var(--dim)">③ 통계</text>
+        <text x="272" y="86" fill="var(--dim)">④ 실험기</text>
+        <text x="360" y="86" fill="var(--dim)">⑤ 최적화기</text>
+        <text x="462" y="86" fill="var(--dim)">⑥ 해석식</text>
+        <text x="548" y="86" fill="var(--dim)">⑦ 도움말</text>
+      </g>
+      <circle cx="646" cy="87" r="10" fill="var(--blue)"></circle>
+      <text x="646" y="90.5" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--paper)" text-anchor="middle">2</text>
+
+      <!-- 본문 왼쪽 -->
+      <rect x="30" y="104" width="270" height="264" fill="var(--paper)" stroke="var(--line)" stroke-width="1"></rect>
+      <text x="44" y="122" font-family="var(--mono)" font-size="7.5" letter-spacing="1" fill="var(--muted)">입력</text>
+      <rect x="44" y="130" width="120" height="18" fill="var(--blue)"></rect>
+      <text x="104" y="142.5" font-family="var(--sans)" font-size="8.5" font-weight="700" fill="var(--paper)" text-anchor="middle">단일 실행 → ③ 통계</text>
+      <circle cx="182" cy="139" r="10" fill="var(--blue)"></circle>
+      <text x="182" y="142.5" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--paper)" text-anchor="middle">4</text>
+      <g fill="var(--paper2)" stroke="var(--line)" stroke-width="1">
+        <rect x="44" y="160" width="112" height="15"></rect><rect x="164" y="160" width="112" height="15"></rect>
+        <rect x="44" y="181" width="112" height="15"></rect><rect x="164" y="181" width="112" height="15"></rect>
+        <rect x="44" y="202" width="112" height="15"></rect><rect x="164" y="202" width="112" height="15"></rect>
+      </g>
+      <text x="44" y="234" font-family="var(--mono)" font-size="7.5" letter-spacing="1" fill="var(--muted)">스테이션 표</text>
+      <g fill="none" stroke="var(--line)" stroke-width="1">
+        <rect x="44" y="240" width="232" height="16"></rect><rect x="44" y="256" width="232" height="16"></rect><rect x="44" y="272" width="232" height="16"></rect>
+      </g>
+      <text x="44" y="308" font-family="var(--mono)" font-size="7.5" letter-spacing="1" fill="var(--muted)">크레인 · 존 표</text>
+      <g fill="none" stroke="var(--line)" stroke-width="1">
+        <rect x="44" y="314" width="232" height="16"></rect><rect x="44" y="330" width="232" height="16"></rect>
+      </g>
+      <circle cx="290" cy="352" r="10" fill="var(--blue)"></circle>
+      <text x="290" y="355.5" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--paper)" text-anchor="middle">3</text>
+
+      <!-- 본문 오른쪽 -->
+      <rect x="300" y="104" width="430" height="264" fill="var(--paper)" stroke="var(--line)" stroke-width="1"></rect>
+      <text x="316" y="122" font-family="var(--mono)" font-size="7.5" letter-spacing="1" fill="var(--muted)">검증 · 시나리오 JSON</text>
+      <rect x="316" y="130" width="398" height="17" fill="var(--paper2)"></rect>
+      <rect x="316" y="130" width="3" height="17" fill="var(--ok)"></rect>
+      <text x="326" y="142" font-family="var(--sans)" font-size="8.5" fill="var(--ok)">검증 통과 — 오류·경고 없음</text>
+      <rect x="316" y="151" width="398" height="17" fill="var(--paper2)"></rect>
+      <rect x="316" y="151" width="3" height="17" fill="var(--blue)"></rect>
+      <text x="326" y="163" font-family="var(--sans)" font-size="8.5" fill="var(--dim)">존 STC1: 입출 수지 +1.0건/h</text>
+      <rect x="316" y="180" width="398" height="176" fill="var(--paper2)" stroke="var(--line)" stroke-width="1"></rect>
+      <g font-family="var(--mono)" font-size="7" fill="var(--muted)">
+        <text x="326" y="196">{ "schema": "stcsim/scenario@1",</text>
+        <text x="326" y="209">  "name": "차체 저장 설비 Rev.0",</text>
+        <text x="326" y="222">  "rack": { "bays": 5, "levels": 6, … },</text>
+        <text x="326" y="235">  "crane": { "axes": { "x": { "v": 2.92 … } } },</text>
+        <text x="326" y="248">  "stations": [ … ], "cranes": [ … ],</text>
+        <text x="326" y="261">  "policy": { "mode": "DC", … } }</text>
+      </g>
+      <circle cx="722" cy="352" r="10" fill="var(--blue)"></circle>
+      <text x="722" y="355.5" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--paper)" text-anchor="middle">5</text>
+    </svg>
+    <figcaption>Fig. 1 — ① 모델 탭 기준 화면 구조</figcaption>
+  </figure>
+
+  <ul class="map-legend">
+    <li><span class="b">1</span><span><strong>제목줄 정보 블록</strong> — 지금 어떤 시나리오인지, 마지막 실행이 OK였는지 NG였는지, 배치 실행이 빠른 방식(Web Worker)으로 도는지를 항상 보여줍니다.</span></li>
+    <li><span class="b">2</span><span><strong>탭 7개</strong> — 작업 순서대로 왼쪽부터 배치돼 있습니다. 조건을 넣고(①), 눈으로 보고(②), 숫자를 읽고(③), 비교하고(④⑤), 계산서와 대조합니다(⑥).</span></li>
+    <li><span class="b">3</span><span><strong>왼쪽 = 입력</strong> — 위에서 아래로 실행 조건, 랙, 크레인, 이재, 운영 정책, 판정 목표, 그리고 스테이션 표와 크레인·존 표입니다.</span></li>
+    <li><span class="b">4</span><span><strong>파란 버튼</strong> — 이 프로그램에서 파란 버튼은 “실제로 돌린다”는 뜻입니다. 흰 버튼은 준비·저장 같은 보조 동작입니다.</span></li>
+    <li><span class="b">5</span><span><strong>오른쪽 = 검증과 JSON</strong> — 입력이 말이 되는지 즉시 검사한 결과와, 조건 전체를 담은 텍스트(JSON)입니다. 왼쪽 폼을 고치면 이 텍스트가 자동으로 따라 바뀝니다.</span></li>
+  </ul>
+
+  <div class="note"><b>검증 칸부터 봅니다.</b> 빨간 글씨(오류)가 하나라도 있으면 실행 버튼을 눌러도 돌지 않습니다. 노란 글씨(경고)는 돌아가되 주의하라는 뜻이고, 파란 글씨는 참고 정보입니다.</div>
+</section>
+
+<!-- ================= 2 ================= -->
+<section id="s2">
+  <h2>2</h2>
+  <p class="title">탭 7개, 언제 쓰나</p>
+
+  <div class="tw">
+    <table class="plain">
+      <thead><tr><th>탭</th><th>이럴 때 씁니다</th><th>여기서 얻는 것</th></tr></thead>
+      <tbody>
+        <tr><td><strong>① 모델</strong></td><td>조건을 넣거나 고칠 때</td><td>검증 결과, 존별 입출 수지</td></tr>
+        <tr><td><strong>② 3D 애니메이션</strong></td><td>크레인이 실제로 어떻게 움직이는지 눈으로 볼 때</td><td>동작 확인, 어디서 막히는지 감</td></tr>
+        <tr><td><strong>③ 통계</strong></td><td>한 조건의 결과 숫자를 읽을 때</td><td>OK/NG 판정, 달성률·가동률·대기·분포</td></tr>
+        <tr><td><strong>④ 실험기</strong></td><td>두 가지 이상 방식을 공정하게 비교할 때</td><td>평균 ± 95% 신뢰구간 비교표</td></tr>
+        <tr><td><strong>⑤ 최적화기</strong></td><td>“몇 대면 되나”를 자동으로 찾을 때</td><td>추천 설계, 순위표, 불가 사유</td></tr>
+        <tr><td><strong>⑥ 해석식</strong></td><td>기존 계산서(FEM 9.851)와 맞는지 확인할 때</td><td>이용률·필요 대수, 시뮬과의 차이 Δ</td></tr>
+        <tr><td><strong>⑦ 도움말</strong></td><td>모델 가정·지표 정의가 헷갈릴 때</td><td>프로그램 안에 들어 있는 요약 설명</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note"><b>탭을 옮겨도 조건은 유지됩니다.</b> 다만 <strong>입력을 고치면 이전 실행 결과는 지워집니다.</strong> 조건이 바뀌었는데 옛 결과를 보여주면 잘못 판단하게 되기 때문입니다. 고쳤으면 다시 실행하시면 됩니다.</div>
+</section>
+
+<!-- ================= 3 ================= -->
+<section id="s3">
+  <h2>3</h2>
+  <p class="title">작업 레시피</p>
+  <p>실무에서 실제로 하게 되는 다섯 가지입니다. 순서대로 누르기만 하면 됩니다.</p>
+
+  <div class="recipe">
+    <div class="when">레시피 A</div>
+    <h3>이 조건이 되는지 안 되는지만 빨리 본다</h3>
+    <ol>
+      <li><span class="ui">① 모델</span> 오른쪽 검증 칸에 빨간 오류가 없는지 확인합니다.</li>
+      <li>파란 버튼 <span class="ui">단일 실행 → ③ 통계</span> 를 누릅니다.</li>
+      <li><span class="ui">③ 통계</span> 맨 위 <strong>달성률</strong> 큰 숫자와, 그 아래 <strong>OK / NG</strong> 상자를 읽습니다.</li>
+      <li>NG면 상자 안 목록이 <strong>탈락한 이유 전부</strong>입니다. 하나씩 대응하면 됩니다.</li>
+    </ol>
+    <div class="out"><b>걸리는 시간</b> · 8시간 운전을 약 0.05초에 계산합니다. 버튼을 누르면 바로 결과가 뜹니다.</div>
+  </div>
+
+  <div class="recipe">
+    <div class="when">레시피 B</div>
+    <h3>크레인이 몇 대(통로 몇 개) 필요한지 찾는다</h3>
+    <ol>
+      <li><span class="ui">⑤ 최적화기</span> 탭으로 갑니다.</li>
+      <li>탐색 공간에서 <strong>병렬 통로 수</strong> 1, 2, 3 을 체크합니다. 나머지는 처음엔 기본값 그대로 둡니다.</li>
+      <li>파란 버튼 <span class="ui">최적화 실행</span> 을 누릅니다.</li>
+      <li>파란 테두리 <strong>추천 설계</strong> 카드에 최소 대수가 나옵니다.</li>
+      <li>그 아래 <strong>순위표</strong>에서 더 적은 대수가 왜 안 되는지 사유를 확인합니다.</li>
+    </ol>
+    <div class="out"><b>기본 조건의 답</b> · 통로 3개면 가동률 약 70%로 <b>OK</b>, 1대와 2대는 <b>NG</b>입니다. 이는 계산서의 “필요 대수 2.52 → 3대”와 같은 결론입니다.</div>
+  </div>
+
+  <div class="recipe">
+    <div class="when">레시피 C</div>
+    <h3>운영 방식을 바꾸면 나아지는지 비교한다</h3>
+    <ol>
+      <li><span class="ui">④ 실험기</span> 탭으로 갑니다.</li>
+      <li>비교하고 싶은 항목만 두 개 이상 체크합니다. 예: <strong>운전 모드</strong>에서 <code>SC-return</code> 과 <code>DC</code>.</li>
+      <li><strong>반복 R</strong> 을 10으로 둡니다. 같은 조건을 난수만 바꿔 10번 돌린다는 뜻입니다.</li>
+      <li><span class="ui">행렬 생성</span> → <span class="ui">실행</span> 순서로 누릅니다.</li>
+      <li>결과표에서 두 줄의 숫자를 비교합니다. 뒤에 붙은 <code>± 값</code> 범위가 <strong>서로 겹치면 차이가 확실하지 않다</strong>는 뜻이니, R을 20~30으로 올려 다시 돌립니다.</li>
+    </ol>
+    <div class="out"><b>공정한 비교입니다</b> · 같은 반복 번호끼리는 똑같은 난수를 씁니다. 그래서 두 방식의 차이가 “운이 좋았다”가 아니라 실제 방식 차이로만 나옵니다.</div>
+  </div>
+
+  <div class="recipe">
+    <div class="when">레시피 D</div>
+    <h3>우리 현장 숫자로 바꾼다</h3>
+    <ol>
+      <li><span class="ui">① 모델</span> 왼쪽 폼에서 랙 치수와 크레인 속도를 우리 설비 값으로 고칩니다. 단위는 각 항목 옆에 적혀 있습니다.</li>
+      <li><strong>스테이션 표</strong>에서 입출고 위치(x, y)와 물동량(건/h)을 고칩니다. 줄이 모자라면 <span class="ui">스테이션 추가</span>.</li>
+      <li><strong>크레인·존 표</strong>에서 존 범위가 스테이션을 모두 품는지 확인합니다.</li>
+      <li>오른쪽 검증 칸이 초록이 될 때까지 고칩니다.</li>
+      <li><span class="ui">JSON 저장</span> 으로 조건 파일을 보관해 둡니다. 다음에 <span class="ui">JSON 열기</span> 로 그대로 불러옵니다.</li>
+    </ol>
+    <div class="out"><b>되돌리고 싶으면</b> · 프리셋을 다시 <span class="ui">불러오기</span> 하면 원래 조건으로 초기화됩니다.</div>
+  </div>
+
+  <div class="recipe">
+    <div class="when">레시피 E</div>
+    <h3>기존 계산서와 맞는지 대조한다</h3>
+    <ol>
+      <li><span class="ui">⑥ 해석식</span> 탭을 엽니다. 계산서와 같은 방식(FEM 9.851 준용)으로 계산한 표가 이미 나와 있습니다.</li>
+      <li><strong>이용률 U</strong>, <strong>필요 대수 N</strong>, <strong>복합사이클 가중평균</strong>이 계산서 값과 같은지 봅니다.</li>
+      <li><span class="ui">③ 통계</span> 에서 단일 실행을 한 번 한 뒤 다시 <span class="ui">⑥ 해석식</span> 으로 오면, 맨 아래 <strong>시뮬레이션 대조</strong> 표에 차이 Δ가 표시됩니다.</li>
+    </ol>
+    <div class="out"><b>판단 기준</b> · Δ가 <b>±5% 안</b>이면 초록으로 표시되고 정합입니다. 기본 조건에서 복합사이클은 −1.8%로 계산서와 잘 맞습니다.</div>
+  </div>
+</section>
+
+<!-- ================= 4 ================= -->
+<section id="s4">
+  <h2>4</h2>
+  <p class="title">우리 설비 숫자 넣기</p>
+  <p><span class="ui">① 모델</span> 왼쪽 폼의 항목을 위에서부터 설명합니다. 단위는 화면에도 적혀 있습니다.</p>
+
+  <h3>실행 조건</h3>
+  <div class="tw"><table>
+    <thead><tr><th>항목</th><th>단위</th><th>뜻</th></tr></thead>
+    <tbody>
+      <tr><td>시뮬레이션 시간</td><td>h</td><td>몇 시간 분량을 모사할지. 8이면 1교대</td></tr>
+      <tr><td>워밍업</td><td>min</td><td>처음 이 시간만큼은 통계에서 뺍니다. 시작 직후의 어수선한 상태가 평균을 왜곡하지 않게 하는 장치입니다</td></tr>
+      <tr><td>난수 시드</td><td>—</td><td>같은 값이면 몇 번을 돌려도 결과가 똑같습니다. 남에게 결과를 보여줄 때 재현이 됩니다</td></tr>
+      <tr><td>병렬 통로 수 k</td><td>개</td><td>같은 설비가 k개 있다는 뜻. 수요를 k로 나눠 <strong>통로 1개분</strong>을 모사합니다</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note warn"><b>통로 수를 3으로 두면 물동량이 3분의 1로 나옵니다.</b> 고장이 아닙니다. 통로 3개에 수요를 나눠 담은 뒤 그중 <strong>한 통로</strong>의 결과를 보여주는 것입니다. 전체 처리량은 화면 값 × 3입니다.</div>
+
+  <h3>랙</h3>
+  <div class="tw"><table>
+    <thead><tr><th>항목</th><th>단위</th><th>뜻</th></tr></thead>
+    <tbody>
+      <tr><td>베이 수 · 단 수</td><td>개</td><td>가로 칸 수와 세로 단 수. 둘을 곱한 만큼이 저장 셀입니다</td></tr>
+      <tr><td>랙 면</td><td>—</td><td>편측(1) 또는 양측(2). 양측이면 셀 수가 두 배</td></tr>
+      <tr><td>초기 충전률</td><td>0~1</td><td>시작할 때 채워 둘 비율. 0.6이면 60%가 차 있는 상태로 시작</td></tr>
+      <tr><td>랙 시작 x0 · 길이 L · 높이 H</td><td>m</td><td>FEM 대표점 P1·P2를 잡는 기준면입니다. 랙이 실제로 놓인 구간</td></tr>
+      <tr><td>통로 전장</td><td>m</td><td>스테이션까지 포함한 통로 전체 길이</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>크레인 — 주행(가로) · 승강(세로)</h3>
+  <div class="tw"><table>
+    <thead><tr><th>항목</th><th>단위</th><th>뜻</th></tr></thead>
+    <tbody>
+      <tr><td>정격속도</td><td>m/min</td><td>카탈로그 최고 속도. 짧은 구간에서는 여기까지 못 올립니다</td></tr>
+      <tr><td>가속도 · 감속도</td><td>m/s²</td><td>짧은 구간의 소요시간을 좌우하는 핵심 값입니다</td></tr>
+      <tr><td>저속 접근거리 · 저속</td><td>m · m/min</td><td>목표 앞에서 천천히 붙는 구간. 없으면 0으로 둡니다</td></tr>
+      <tr><td>고정 지연</td><td>s</td><td>제어·통신 지연처럼 이동마다 항상 붙는 시간</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>이재(포크)와 부대시간</h3>
+  <div class="tw"><table>
+    <thead><tr><th>항목</th><th>단위</th><th>뜻</th></tr></thead>
+    <tbody>
+      <tr><td>이재시간 지정 t_ü</td><td>s/회</td><td><strong>값을 넣으면 그 값을 그대로 씁니다.</strong> 0으로 두면 아래 포크 제원으로 계산합니다. 실측값이 있으면 여기에 넣는 편이 정확합니다</td></tr>
+      <tr><td>포크 스트로크 · 속도 · 가속도</td><td>m · m/min · m/s²</td><td>t_ü를 0으로 뒀을 때만 쓰입니다</td></tr>
+      <tr><td>승강·안착</td><td>s</td><td>포크가 짐을 들어 올리고 자리 잡는 시간</td></tr>
+      <tr><td>정지·위치결정</td><td>s</td><td>이동 <strong>한 번마다</strong> 더해집니다</td></tr>
+      <tr><td>가동률 η</td><td>0~1</td><td>고장·정비를 뺀 실가동 비율. 해석식(⑥)의 이용률 환산에 쓰입니다</td></tr>
+      <tr><td>크레인 폭</td><td>m</td><td>같은 레일에 두 대를 둘 때 존 사이 간격이 충분한지 검사합니다</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>운영 정책 — 크레인이 일을 고르는 규칙</h3>
+  <p>여기가 결과를 가장 크게 바꾸는 부분입니다.</p>
+  <div class="tw"><table>
+    <thead><tr><th>항목</th><th>선택지</th><th>뜻</th></tr></thead>
+    <tbody>
+      <tr><td>운전 모드</td><td>SC-return</td><td>일 하나 끝내고 정해진 자리로 복귀. 계산서의 <strong>단독사이클 tm1</strong>에 대응</td></tr>
+      <tr><td></td><td>SC-stay</td><td>일 하나 끝내고 그 자리에서 대기. 복귀 거리가 없어 조금 유리</td></tr>
+      <tr><td></td><td>DC</td><td><strong>입고 1건과 출고 1건을 한 번에 묶어</strong> 처리. 계산서의 <strong>복합사이클 tm2</strong>에 대응하며 가장 효율적입니다</td></tr>
+      <tr><td>DC 페어링</td><td>fifo / nearest</td><td>묶을 짝을 오래된 순으로 고를지, 이동이 가장 짧은 것으로 고를지</td></tr>
+      <tr><td>우선순위</td><td>4가지</td><td>입고와 출고 중 무엇을 먼저 할지. 한쪽만 밀어주면 반대쪽이 계속 밀립니다</td></tr>
+      <tr><td>저장 위치</td><td>random / closest</td><td>빈 셀을 아무 데나 쓸지, 가장 가까운 곳을 쓸지</td></tr>
+      <tr><td>반출 셀</td><td>random / fifo / nearest</td><td>어느 차체를 꺼낼지. 아무거나 꺼내도 되면 <code>random</code> 또는 <code>nearest</code>가 빠릅니다</td></tr>
+      <tr><td>기아 방지 한도</td><td>s</td><td>한쪽 작업이 이 시간 넘게 밀리면 강제로 먼저 처리합니다. 0이면 사용 안 함</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>판정 목표 — OK/NG를 가르는 기준</h3>
+  <div class="tw"><table>
+    <thead><tr><th>항목</th><th>기본값</th><th>뜻</th></tr></thead>
+    <tbody>
+      <tr><td>최대 가동률 ρ</td><td>0.8</td><td>크레인이 이보다 더 바쁘면 대기가 급격히 늘어 NG로 봅니다</td></tr>
+      <tr><td>최소 달성률</td><td>0.98</td><td>요구 물동량의 98% 이상을 처리해야 OK</td></tr>
+      <tr><td>평균 대기열 상한</td><td>3</td><td>스테이션 앞에 평균 몇 건까지 쌓이는 것을 허용할지</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>스테이션 표 — 입출고구</h3>
+  <div class="tw"><table>
+    <thead><tr><th>열</th><th>뜻</th></tr></thead>
+    <tbody>
+      <tr><td>종류</td><td>입고(랙에 넣음) 또는 출고(랙에서 꺼냄)</td></tr>
+      <tr><td>x · y</td><td>통로 방향 위치와 높이(m). 2층 컨베이어면 y를 8처럼 둡니다</td></tr>
+      <tr><td>용량</td><td>스테이션 앞 버퍼 대수. 이걸 넘치면 <strong>상류 라인이 멈춘 것</strong>으로 집계합니다</td></tr>
+      <tr><td>도착</td><td><code>takt</code>은 일정 간격(생산 라인), <code>poisson</code>은 불규칙(수리·반품 등)</td></tr>
+      <tr><td>건/h</td><td>시간당 요구 물동량</td></tr>
+      <tr><td>편차%</td><td>takt이 얼마나 흔들리는지. 10이면 ±10%</td></tr>
+      <tr><td>minStock</td><td>출고 전용. 재고가 이만큼은 있어야 출고 호출을 받습니다</td></tr>
+      <tr><td>반출</td><td><code>any</code>는 아무 차체나, <code>fifo</code>는 가장 오래된 차체를 지정해 꺼냅니다</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>크레인 · 존 표</h3>
+  <p>크레인 한 대가 담당하는 <strong>직사각형 구역</strong>을 정합니다. 한 통로에 크레인을 두 대 이상 두려면 구역을 나눠야 합니다.</p>
+  <ul class="tight">
+    <li><strong>x 시작 · 끝</strong> — 담당 통로 구간(m)</li>
+    <li><strong>y 시작 · 끝</strong> — 담당 높이 구간(m). 상·하층을 나눌 때 씁니다</li>
+    <li><strong>home</strong> — SC-return 모드에서 일 끝내고 돌아갈 자리</li>
+    <li><strong>x0 · y0</strong> — 시작 위치</li>
+  </ul>
+  <div class="note stop"><b>존을 나눌 때 가장 많이 걸리는 함정.</b> 각 존에는 <strong>출고 스테이션이 하나는 있어야</strong> 합니다. 없으면 그 존은 물건이 들어가기만 하고 나오지 못해 결국 꽉 찹니다. 프로그램은 이것을 빨간 오류로 잡아 줍니다. 이건 프로그램 결함이 아니라 그 배치가 물리적으로 성립하지 않는다는 뜻입니다. 반대편에 출고구를 하나 더 두면 해결됩니다.</div>
+</section>
+
+<!-- ================= 5 ================= -->
+<section id="s5">
+  <h2>5</h2>
+  <p class="title">결과 읽는 법</p>
+
+  <h3>OK / NG 판정 — 다섯 가지를 모두 통과해야 OK</h3>
+  <ul class="verdict-list">
+    <li><span class="chk">1</span><span><span class="lbl">달성률이 목표 이상</span><span class="exp">요구한 물동량을 실제로 처리했는가</span></span></li>
+    <li><span class="chk">2</span><span><span class="lbl">최대 가동률이 ρ 이하</span><span class="exp">여유 없이 100%로 돌면 조금만 틀어져도 무너집니다</span></span></li>
+    <li><span class="chk">3</span><span><span class="lbl">대기열이 늘어나지 않음</span><span class="exp">시간이 갈수록 줄이 길어지면 언젠가는 반드시 터집니다</span></span></li>
+    <li><span class="chk">4</span><span><span class="lbl">평균 대기열이 상한 이하</span><span class="exp">스테이션 앞에 쌓이는 양</span></span></li>
+    <li><span class="chk">5</span><span><span class="lbl">저장 블로킹·처리 불가가 없음</span><span class="exp">빈 셀이 없어 못 넣거나, 꺼낼 수 없는 작업이 생기지 않았는가</span></span></li>
+  </ul>
+
+  <h3>맨 위 숫자 카드</h3>
+  <div class="tw"><table class="plain">
+    <thead><tr><th>카드</th><th>읽는 법</th></tr></thead>
+    <tbody>
+      <tr><td><strong>요구 대비 달성률</strong></td><td>가장 중요한 숫자입니다. 100%에 가까워야 정상. 45%면 요구의 절반도 못 한 것입니다</td></tr>
+      <tr><td><strong>입고 / 출고 처리</strong></td><td>실제 처리량(건/h)과 요구량을 나란히 보여줍니다. 한쪽만 낮으면 그쪽이 밀린 것입니다</td></tr>
+      <tr><td><strong>크레인 가동률</strong></td><td>실제로 일한 시간 비율. 100%면 쉴 틈이 없다는 뜻이고 이미 한계입니다</td></tr>
+      <tr><td><strong>평균 대기</strong></td><td>스테이션에서 크레인을 기다린 평균 시간(초). 수천 초가 나오면 사실상 방치된 것입니다</td></tr>
+      <tr><td><strong>라인 정지시간</strong></td><td><strong>현장에서 실제로 라인이 멈춘 시간</strong>입니다. 입고 버퍼가 꽉 차 상류가 물건을 못 보낸 시간의 합. 관리자에게 가장 와닿는 숫자입니다</td></tr>
+      <tr><td><strong>재고</strong></td><td>랙이 얼마나 찼는지. 100%에 닿으면 더 넣을 곳이 없어 크레인이 멈춥니다</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>크레인 상태 색</h3>
+  <p>3D 화면과 통계 그래프에서 같은 색을 씁니다.</p>
+  <ul class="swatches">
+    <li><i style="background:var(--st-move)"></i><span><strong>파랑 — 공차 주행</strong> · 짐 없이 가지러 가는 중</span></li>
+    <li><i style="background:var(--st-load)"></i><span><strong>초록 — 적재 주행</strong> · 짐을 싣고 이동 중. 이게 많으면 건강한 상태입니다</span></li>
+    <li><i style="background:var(--st-fork)"></i><span><strong>주황 — 이재</strong> · 포크로 넣고 빼는 중. 지나치게 크면 포크가 병목입니다</span></li>
+    <li><i style="background:var(--st-block)"></i><span><strong>빨강 — 블로킹 / 기아</strong> · 넣을 빈 셀이 없거나 꺼낼 재고가 없어 못 움직이는 상태. 나오면 원인을 찾아야 합니다</span></li>
+    <li><i style="background:var(--st-idle)"></i><span><strong>회색 — 유휴</strong> · 할 일이 없어 쉬는 중. 여유가 있다는 좋은 신호입니다</span></li>
+  </ul>
+
+  <h3>그래프</h3>
+  <div class="tw"><table class="plain">
+    <thead><tr><th>그래프</th><th>이렇게 보면 됩니다</th></tr></thead>
+    <tbody>
+      <tr><td><strong>시간당 처리 물동량</strong></td><td>점선이 요구량입니다. 실선이 점선에 붙어 평평하면 정상. 점선 아래에서 벌어지면 능력 부족</td></tr>
+      <tr><td><strong>스테이션 대기열 길이</strong></td><td>평평해야 정상입니다. <strong>계속 우상향이면 포화</strong>이고, 시간을 늘려도 절대 안정되지 않습니다</td></tr>
+      <tr><td><strong>랙 재고율</strong></td><td>100%나 0%에 닿으면 그 시점부터 크레인이 막히거나 굶습니다</td></tr>
+      <tr><td><strong>대기·사이클 히스토그램</strong></td><td>평균만 보면 놓치는 <strong>최악의 경우</strong>가 보입니다. 오른쪽 끝에 몰려 있으면 일부 작업이 심하게 밀린 것입니다</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>± 붙은 숫자(95% 신뢰구간)</h3>
+  <p><span class="ui">④ 실험기</span>와 <span class="ui">⑤ 최적화기</span>의 결과는 <code>62.2 ± 4.5</code> 처럼 나옵니다. 여러 번 돌린 평균이 62.2이고, <strong>참값이 57.7~66.7 사이일 가능성이 95%</strong>라는 뜻입니다.</p>
+  <ul class="tight">
+    <li>두 설계를 비교할 때 <strong>± 범위가 겹치면</strong> 차이가 있다고 말하기 어렵습니다.</li>
+    <li>확실히 가리고 싶으면 <strong>반복 R을 늘립니다.</strong> R을 4배로 늘리면 범위가 대략 절반으로 좁아집니다.</li>
+  </ul>
+</section>
+
+<!-- ================= 6 ================= -->
+<section id="s6">
+  <h2>6</h2>
+  <p class="title">자주 막히는 곳</p>
+
+  <div class="tw"><table class="plain">
+    <thead><tr><th>증상</th><th>원인과 해결</th></tr></thead>
+    <tbody>
+      <tr><td>실행 버튼을 눌러도 아무 일이 없다</td><td>검증에 빨간 오류가 있습니다. <span class="ui">① 모델</span> 오른쪽 검증 칸의 첫 줄을 읽고 그것부터 고칩니다</td></tr>
+      <tr><td>“출고 스테이션이 없어 반출 불가”</td><td>존을 나눴는데 그 존 안에 출고구가 없습니다. 존 범위를 넓히거나 그쪽에 출고 스테이션을 추가합니다</td></tr>
+      <tr><td>“존 중첩”</td><td>크레인 두 대의 x·y 범위가 겹칩니다. 경계값을 맞춰 딱 붙게 하되 겹치지는 않게 합니다</td></tr>
+      <tr><td>결과가 갑자기 사라졌다</td><td>입력을 고치면 이전 결과를 지웁니다. 다시 <span class="ui">단일 실행</span> 하시면 됩니다</td></tr>
+      <tr><td>3D가 안 움직인다</td><td>다른 탭으로 가면 자동으로 멈춥니다. <span class="ui">② 3D</span> 로 돌아와 <span class="ui">재생</span> 을 누릅니다</td></tr>
+      <tr><td>창을 다른 프로그램으로 덮으면 시계가 멈춘다</td><td>정상입니다. 브라우저가 화면을 안 그릴 때는 시간도 진행하지 않습니다</td></tr>
+      <tr><td>CSV 저장이 안 된다</td><td>공유 링크(웹) 버전은 보안상 파일 저장이 막혀 있어 <strong>복사용 창</strong>이 대신 뜹니다. 파일로 받으려면 로컬 HTML 파일 버전에서 하시면 됩니다</td></tr>
+      <tr><td>실험기가 오래 걸린다</td><td>설계 조합 수 × 반복 R 만큼 돌립니다. 조합을 줄이거나 R을 낮춥니다. 보통 수십 건은 1초 안에 끝납니다</td></tr>
+      <tr><td>대기시간 그래프 오른쪽 끝에만 막대가 몰린다</td><td>포화 상태라 대기가 측정 범위를 넘은 것입니다. 그 자체가 “능력 부족”이라는 결론입니다</td></tr>
+      <tr><td>계산서와 사이클타임이 5~8% 다르다</td><td>작은 랙(5×6)에서는 정상 범위입니다. 계산서는 랙을 연속 면으로 가정하고 시뮬은 실제 칸 단위로 계산하기 때문입니다</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ================= 7 ================= -->
+<section id="s7">
+  <h2>7</h2>
+  <p class="title">용어 사전</p>
+
+  <div class="tw"><table class="plain">
+    <thead><tr><th>용어</th><th>이 프로그램에서의 뜻</th></tr></thead>
+    <tbody>
+      <tr><td><strong>단독사이클 (SC)</strong></td><td>입고 또는 출고 <strong>한 건</strong>만 처리하고 끝나는 왕복. 계산서의 tm1</td></tr>
+      <tr><td><strong>복합사이클 (DC)</strong></td><td>입고 한 건과 출고 한 건을 <strong>한 번의 왕복에 묶어</strong> 처리. 계산서의 tm2. 빈 채로 돌아오는 거리를 줄여 효율이 높습니다</td></tr>
+      <tr><td><strong>이재 (t_ü)</strong></td><td>포크가 짐을 넣거나 빼는 데 걸리는 시간. 복합사이클은 4번 일어납니다</td></tr>
+      <tr><td><strong>존 · 조닝</strong></td><td>크레인 한 대가 담당하는 구역. 한 통로를 좌우나 상하로 나눠 여러 대를 넣는 것이 조닝입니다</td></tr>
+      <tr><td><strong>병렬 통로</strong></td><td>같은 설비를 여러 통로로 두는 것. 계산서의 “필요 대수 3대”가 이쪽에 해당합니다</td></tr>
+      <tr><td><strong>takt</strong></td><td>생산 라인처럼 일정 간격으로 물건이 오는 방식</td></tr>
+      <tr><td><strong>포화</strong></td><td>들어오는 양이 처리 능력을 넘어 대기열이 무한정 늘어나는 상태. 시간을 늘려도 해결되지 않습니다</td></tr>
+      <tr><td><strong>워밍업</strong></td><td>통계에서 제외하는 초반 구간. 시작 상태의 영향을 지우기 위한 것</td></tr>
+      <tr><td><strong>시드</strong></td><td>난수의 출발점. 같으면 결과도 같아 재현이 됩니다</td></tr>
+      <tr><td><strong>가동률 (ρ, busy)</strong></td><td>크레인이 실제로 일한 시간 비율. 유휴·대기는 뺍니다</td></tr>
+      <tr><td><strong>이용률 (U)</strong></td><td>해석식에서 필요한 시간 ÷ 쓸 수 있는 시간. 100%를 넘으면 그 자체로 불가능하다는 뜻입니다</td></tr>
+      <tr><td><strong>대표점 P1 · P2</strong></td><td>FEM 9.851이 정한 두 기준 위치. 랙 전체를 대표하는 평균 사이클타임을 손계산으로 구하기 위한 규격상의 약속입니다</td></tr>
+      <tr><td><strong>Pareto</strong></td><td>“대수를 늘리지 않으면서 대기를 더 줄일 수는 없는” 설계들. 최적화기 그래프에서 표시됩니다</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ================= 8 ================= -->
+<section id="s8">
+  <h2>8</h2>
+  <p class="title">파일과 저장</p>
+
+  <h3>어떤 파일을 열면 되나</h3>
+  <div class="tw"><table class="plain">
+    <thead><tr><th>용도</th><th>위치</th></tr></thead>
+    <tbody>
+      <tr><td><strong>평소 사용</strong></td><td><code>01. Stacker Crane\stc-asrs-sim\dist\STC_ASRS_시뮬레이터_v0.1.html</code> — 더블클릭. 인터넷 없이 동작하고 파일 저장이 됩니다</td></tr>
+      <tr><td><strong>남에게 보여줄 때</strong></td><td>공유 링크(아티팩트). 설치 없이 열리지만 파일 저장은 막혀 있습니다</td></tr>
+      <tr><td><strong>이 설명서</strong></td><td><code>stc-asrs-sim\docs\사용설명서.html</code></td></tr>
+      <tr><td><strong>개발자용 문서</strong></td><td><code>stc-asrs-sim\README.md</code> — 모델 수식, 검증 결과, 빌드 방법</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>조건 저장과 불러오기</h3>
+  <ul class="tight">
+    <li><span class="ui">JSON 저장</span> — 지금 화면의 조건 전체를 파일 하나로 저장합니다. 검토 이력을 남길 때 씁니다.</li>
+    <li><span class="ui">JSON 열기</span> — 저장해 둔 조건을 그대로 복원합니다.</li>
+    <li><span class="ui">④ 실험기</span>의 <span class="ui">CSV 내보내기</span> — 비교표를 엑셀에서 열 수 있게 내보냅니다. 한글이 깨지지 않습니다.</li>
+  </ul>
+
+  <div class="note warn"><b>구글 드라이브 폴더에 있습니다.</b> 드라이브가 동기화 중일 때 파일이 잠겨 저장이 실패할 수 있습니다. 그럴 때는 잠시 뒤 다시 시도하시면 됩니다.</div>
+
+  <h3>지금 조건이 정확한가</h3>
+  <p>기본 프리셋은 계산서 Rev.0의 값을 그대로 담았지만, 계산서에 <strong>“확인 필요 사항”으로 남아 있던 네 가지</strong>는 가정값입니다. 확정되면 <span class="ui">① 모델</span>에서 고치고 다시 돌리시면 됩니다.</p>
+  <div class="tw"><table class="plain">
+    <thead><tr><th>미확정 항목</th><th>현재 넣어 둔 가정</th></tr></thead>
+    <tbody>
+      <tr><td>랙 편측인지 양측인지</td><td>편측 30셀</td></tr>
+      <tr><td>각 단의 높이</td><td>0 / 1.15 / 3.92 / 6.77 / 9.72 / 12.67 m</td></tr>
+      <tr><td>시작 재고 수준</td><td>60%</td></tr>
+      <tr><td>물건이 오는 간격의 흔들림</td><td>takt ±10%</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<hr class="rule">
+<p class="end">STC AS/RS 시뮬레이터 v0.1 · 사용설명서 2026-09-07 · 모델 가정과 검증 수치는 프로그램 <span class="ui">⑦ 도움말</span> 탭과 README.md에 있습니다.</p>
+
+</main>
+</div>
+</body>
+</html>

@@ -18,7 +18,7 @@ cd "01. Stacker Crane/stc-asrs-sim"
 node src/kernel.test.js && node src/kin.test.js && node src/stats.test.js && node src/validate.test.js
 node src/fem9851.test.js && node src/engine.test.js && node src/optimizer.test.js && node src/scene.test.js && node src/runner.test.js
 node src/build.js                      # dist/STC_ASRS_시뮬레이터_v0.1.html
-node tools/serve.js 8765               # 미리보기 http://localhost:8765/ (file:// 로 열어도 동작)
+node tools/serve.js 8765               # 프로젝트 루트 서빙: / = 시뮬레이터, /docs/사용설명서.html
 ```
 
 `build.js`는 `template.html`의 마커에 vendor(three)와 모듈을 인라인한 뒤, **배포물에서 `data-module` 속성으로 모듈을 역추출해 같은 테스트를 다시 돌린다**(배포된 코드 = 테스트된 코드). three.min.js는 `vendor/THREE_SHA256.txt`와 대조한다. 테스트는 프레임워크 없이 `node x.test.js`.
@@ -136,4 +136,5 @@ stc-asrs-sim\
 
 ## 공유 링크
 
-- claude.ai Artifact (비공개, 2026-09-07 v0.1): https://claude.ai/code/artifact/bdbcef4c-da0c-47b7-83df-5837b728ce83 — `dist\*.artifact.html` 변형(래퍼 제거, 파일 저장 대신 복사용 표시). 재발행: `node src/build.js` 후 같은 경로를 다시 발행.
+- 시뮬레이터 (비공개, 2026-09-07 v0.1): https://claude.ai/code/artifact/bdbcef4c-da0c-47b7-83df-5837b728ce83
+- 사용설명서 (비공개): https://claude.ai/code/artifact/345fd1cd-d5e9-4e03-ad34-a90c26cf83dc — `docs사용설명서.artifact.html` — `dist\*.artifact.html` 변형(래퍼 제거, 파일 저장 대신 복사용 표시). 재발행: `node src/build.js` 후 같은 경로를 다시 발행.
