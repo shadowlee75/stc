@@ -1284,6 +1284,53 @@ const STCPresets = (() => {
     };
   }
 
+  // ---------- TC 저장 설비 (도면 "TC details") ----------
+  // 도면 판독: 전장 45,000 (System length 44,875) · 폭 14,700 · 전고 19,600
+  //   베이 6 × 피치 5,650 → CL 5,550 / 11,200 / 16,850 / 22,500 / 28,150 / 33,800 (bay1→bay6 = 28,250)
+  //   단 6 × 피치 2,900 → 1,500 / 4,400 / 7,300 / 10,200 / 13,100 / 16,000 (+상부 3,550 = 19,550 ≈ 19,600)
+  //   통로 2개(크레인 2대), 각 모듈 = 랙 2,050 + 통로 3,200 + 랙 2,050 → (7,300)×2 + 100 = 14,700
+  //   우측 타워 = bay6 CL 33,800 + 6,000 + 5,200 = 45,000
+  //   입고 Entry from TC coolers 70 JPH (상부) · 출고 Exit to insp. & polish 70 JPH (하부)
+  // 크레인 제원은 도면에 없어 [[carBodyRev0]] 값을 준용한다 — 확인 필요.
+  function tcStorageDwg() {
+    return {
+      schema: 'stcsim/scenario@1',
+      name: 'TC 저장 설비 — 도면 6 Bay × 6 Level × 2통로',
+      note: '출처: TC details 도면. 통로당 72셀(양측), 2통로 합계 144셀. 입출고 70 JPH 균형. 크레인 속도·이재시간·가동률은 도면에 없어 차체 Rev.0 값 준용 — 스펙서로 확인 요.',
+      seedBase: 12345,
+      run: { durationSec: 8 * 3600, warmupSec: 3600, tsBinSec: 300, sampleSec: 10 },
+      rack: {
+        bays: 6, levels: 6, sides: 2,
+        x0: 2.725, length: 33.9, height: 16.0, aisleLength: 45.0,
+        bayX: [5.55, 11.20, 16.85, 22.50, 28.15, 33.80],
+        levelY: [1.5, 4.4, 7.3, 10.2, 13.1, 16.0],
+        depth: 1, initialFill: 0.5, initialFillHours: 2,
+        cellDepth: 2.05, aisleWidth: 3.2, loadSize: { l: 4.8, w: 1.9, h: 1.5 },
+      },
+      crane: {
+        axes: {
+          x: { v: 175 / 60, a: 0.4, d: 0.4, creepDist: 0, creepV: 0, tDelay: 0 },
+          y: { v: 50 / 60, a: 0.5, d: 0.5, creepDist: 0, creepV: 0, tDelay: 0 },
+        },
+        fork: { v: 1.0, a: 0.6, d: 0.6, stroke: 1.4, lift: 0, tSeat: 1.8, tOverride: 8.0 },
+        tPos: 1.0, bodyWidth: 6.0, availability: 0.9,
+      },
+      stations: [
+        { id: 'E_TC', name: '입고 TC coolers (상부)', kind: 'in', x: 39.8, y: 14.75, capacity: 2,
+          arrival: { type: 'takt', ratePerHour: 70, jitterPct: 10 } },
+        { id: 'A_INSP', name: '출고 검사·폴리시 (하부)', kind: 'out', x: 39.8, y: 1.5, capacity: 2,
+          arrival: { type: 'takt', ratePerHour: 70, jitterPct: 10, minStock: 1 }, retrieval: 'any', takeAway: null },
+      ],
+      cranes: [
+        { id: 'STC1', zone: { x: [0, 45.0], y: [0, 16.0] }, home: 'E_TC', x0: 39.8, y0: 14.75 },
+      ],
+      policy: { mode: 'DC', pairing: 'nearest', priority: 'oldest-first', storageRule: 'closest-open', retrievalCell: 'nearest', agingLimit_s: null },
+      parallelAisles: 2,
+      targets: { rhoMax: 0.8, maxQueue: 3, doneRatioMin: 0.98 },
+      hist: { cycle: { binSec: 5, maxSec: 300 }, wait: { binSec: 15, maxSec: 1800 } },
+    };
+  }
+
   // ---------- 범용 20 Bay × 10 Level (stc_calculator.py 기본값) ----------
   function generic20x10() {
     return {
@@ -1394,6 +1441,7 @@ const STCPresets = (() => {
 
   const list = [
     { key: 'carBodyRev0', label: '차체 저장 설비 Rev.0 (5×6)', make: carBodyRev0 },
+    { key: 'tcStorageDwg', label: 'TC 저장 설비 — 도면 6×6 × 2통로', make: tcStorageDwg },
     { key: 'generic20x10', label: '범용 20×10 (stc_calculator 기본값)', make: generic20x10 },
     { key: 'largeRackValidation', label: '검증용 대형 랙 50×15', make: largeRackValidation },
     { key: 'bozerWhite1', label: '검증용 Bozer & White b=1', make: () => bozerWhite(1) },
@@ -1406,7 +1454,7 @@ const STCPresets = (() => {
     return clone(p.make());
   }
 
-  return { version: '0.1.0', list, get, carBodyRev0, generic20x10, largeRackValidation, bozerWhite, clone };
+  return { version: '0.2.0', list, get, carBodyRev0, tcStorageDwg, generic20x10, largeRackValidation, bozerWhite, clone };
 })();
 
 if (typeof module !== 'undefined' && module.exports) module.exports = STCPresets;
@@ -3249,7 +3297,7 @@ const STCView3D = (() => {
 
 if (typeof module !== 'undefined' && module.exports) module.exports = STCView3D;
 </script>
-<script>window.STC_ARTIFACT = true; window.STC_BUILD = {"version":"0.1.0","builtAt":"2026-09-08T02:19:40.501Z","three":"r128 sha256:9274bbcec8d9","modules":["kernel.js","rng.js","kin.js","stats.js","validate.js","presets.js","fem9851.js","engine.js","optimizer.js","scene.js","charts.js","runner.js","view3d.js","app.js"]};</script>
+<script>window.STC_ARTIFACT = true; window.STC_BUILD = {"version":"0.1.0","builtAt":"2026-09-08T02:46:59.007Z","three":"r128 sha256:9274bbcec8d9","modules":["kernel.js","rng.js","kin.js","stats.js","validate.js","presets.js","fem9851.js","engine.js","optimizer.js","scene.js","charts.js","runner.js","view3d.js","app.js"]};</script>
 <script class="app" data-module="app.js">'use strict';
 /* ============================================================
  * STC 시뮬레이터 — 앱 (app.js): 탭 · 시나리오 편집 · 3D 재생 · 통계 · 실험기 · 최적화기 · 해석식 · 도움말
