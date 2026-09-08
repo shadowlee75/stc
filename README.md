@@ -56,6 +56,7 @@ stc-asrs-sim\
 - **셀**: single deep, `empty | reservedIn | occupied | reservedOut`. 예약은 디스패치 시점(대기 중 자원 점유 없음 → 데드락 없음).
 - **스테이션**: 입고는 도착(`takt` ± jitter% / `poisson` / `csv`)마다 작업 생성, 용량 초과분은 백로그 → **라인 정지시간** KPI. 출고는 호출마다 작업 생성, 재고 ≥ `minStock`일 때만 디스패치. 반출 대상은 `any`(임의 재고, 사용자 확정) 또는 `fifo`.
 - **존**: 크레인 1대 = 사각 존 1개. 겹침 불가(레일 충돌 모델 없음), 같은 레일 존은 `bodyWidth` 간격 검사, x 겹침·y 분리 존은 "별도 레일" 경고. 스테이션·셀은 위치로 귀속. **출고 스테이션이 없는 존은 반출 불가 → 검증 오류**(현행 배치의 좌/우·상/하 분할이 모두 여기에 걸린다 — 물리적 한계이며 고장이 아님).
+- **검증 표시**: `validate()` 는 지적마다 target(폼 필드 경로 / 스테이션·크레인 행과 열 / 표 전체)을 함께 반환한다. 앱은 그 칸을 붉게(오류)·노랗게(경고) 표시하고, 메시지를 누르면 해당 칸으로 이동·포커스한다. 문자열 배열 errors/warnings/info 는 기존 호출부 호환을 위해 유지.
 - **정책**: `mode SC-return(↔tm1) | SC-stay | DC(↔tm2)` · `pairing fifo | nearest` · `priority oldest-first | storage-first | retrieval-first | alternate (+agingLimit_s)` · `storageRule random-empty | closest-open` · `retrievalCell random | fifo | nearest`.
 - **대안 표현**: `parallelAisles k`(동일 배치 통로 k개, 수요 ÷ k — 계산서 "3대 = 통로 3개"의 동등 비교, 사용자 확정) · 스테이션 변형 `addOutRight`(반대편 출고 추가, 수요는 존별 입고 비중으로 재배분) · `outLift`(출고 스테이션 y→0).
 - **통계**: 상태별 시간가중(`idle · moveEmpty · moveLoaded · fork · blocked · starved`), 대기열 시간가중, 대기·사이클 고정빈 히스토그램, 시계열 빈. `WARMUP_END`에서 모든 누적기 리셋. `queueTrend`(후반¼/전반¼), `saturated` 플래그.

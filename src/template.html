@@ -10,6 +10,7 @@
   --paper:#ffffff; --paper2:#f7f7f8; --ink:#111111; --dim:#666a70; --muted:#898781;
   --line:#dcdee1; --rule:#111111; --blue:#002FA7;
   --ok:#0a7a3c; --warn:#a05c00; --err:#b3001b;
+  --errbg:#fdf2f2; --warnbg:#fdf8ec;
 }
 *{box-sizing:border-box; margin:0; padding:0}
 html{background:var(--paper)}
@@ -79,11 +80,30 @@ table.edit input,table.edit select{padding:3px 4px; font-size:11.5px}
 .tblwrap{overflow-x:auto}
 
 /* ---------- 메시지 ---------- */
-.msgs div{padding:4px 8px; border-left:3px solid var(--line); margin:3px 0; font-size:12px; background:var(--paper2)}
-.msgs .err{border-color:var(--err); color:var(--err)}
-.msgs .warn{border-color:var(--warn); color:var(--warn)}
-.msgs .info{border-color:var(--blue); color:var(--dim)}
-.msgs .okm{border-color:var(--ok); color:var(--ok)}
+.msgs div,.msgs button{
+  display:block; width:100%; text-align:left; font:inherit; font-size:12px;
+  padding:5px 9px; margin:3px 0; border:none; border-left:3px solid var(--line);
+  background:var(--paper2); color:var(--ink);
+}
+.msgs button.jump{cursor:pointer}
+.msgs button.jump:hover .go,.msgs button.jump:focus-visible .go{opacity:1; text-decoration:underline}
+.msgs .go{font-size:11px; font-weight:700; opacity:.65; white-space:nowrap; margin-left:8px}
+.msgs .err{border-left-color:var(--err); color:var(--err)}
+.msgs .warn{border-left-color:var(--warn); color:var(--warn)}
+.msgs .info{border-left-color:var(--blue); color:var(--dim)}
+.msgs .okm{border-left-color:var(--ok); color:var(--ok)}
+.msgs .errhead{border-left-color:var(--err); background:var(--errbg); color:var(--err); font-weight:700}
+
+/* ---------- 이상 항목 표시 ---------- */
+input.mk-err,select.mk-err,textarea.mk-err{border-color:var(--err); background:var(--errbg); box-shadow:inset 0 0 0 1px var(--err)}
+input.mk-warn,select.mk-warn,textarea.mk-warn{border-color:var(--warn); background:var(--warnbg)}
+tr.mk-err>td{background:var(--errbg)}
+tr.mk-warn>td{background:var(--warnbg)}
+table.mk-err{outline:2px solid var(--err); outline-offset:3px}
+table.mk-warn{outline:2px solid var(--warn); outline-offset:3px}
+@keyframes mkflash{from{box-shadow:0 0 0 0 rgba(0,47,167,.5)} to{box-shadow:0 0 0 12px rgba(0,47,167,0)}}
+.mk-flash{animation:mkflash .7s ease-out 2}
+@media (prefers-reduced-motion:reduce){.mk-flash{animation:none}}
 
 /* ---------- KPI ---------- */
 .kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); margin:0 20px 14px}

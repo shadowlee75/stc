@@ -301,6 +301,15 @@ hr.rule{border:none; border-top:1px solid var(--line); margin:34px 0}
   </ul>
 
   <div class="note"><b>검증 칸부터 봅니다.</b> 빨간 글씨(오류)가 하나라도 있으면 실행 버튼을 눌러도 돌지 않습니다. 노란 글씨(경고)는 돌아가되 주의하라는 뜻이고, 파란 글씨는 참고 정보입니다.</div>
+
+  <h3>어느 칸이 잘못됐는지 찾기</h3>
+  <p>메시지가 항목 이름만 알려주면 표에서 그 줄을 찾아야 해서 번거롭습니다. 그래서 <strong>문제가 있는 칸을 직접 표시</strong>합니다.</p>
+  <ul class="tight">
+    <li><strong>빨간 칸</strong> — 고쳐야 실행되는 오류. 해당 입력 칸과 그 줄 전체가 붉게 표시됩니다.</li>
+    <li><strong>노란 칸</strong> — 경고. 돌아가지만 확인해 보는 편이 좋습니다.</li>
+    <li>메시지 오른쪽 <span class="ui">해당 항목 보기 →</span> 를 누르면 <strong>그 칸으로 바로 이동해 깜빡이며 커서가 놓입니다.</strong></li>
+  </ul>
+  <p class="small dim">예를 들어 “크레인 STC1: home 스테이션 'E_L0'이 없습니다”를 누르면 크레인·존 표의 STC1 줄로 내려가 home 칸이 선택됩니다. 표 전체가 문제인 경우(예: 어느 존에도 속하지 않는 셀)는 표 바깥에 테두리가 생깁니다.</p>
 </section>
 
 <!-- ================= 2 ================= -->
@@ -565,7 +574,7 @@ hr.rule{border:none; border-top:1px solid var(--line); margin:34px 0}
   <div class="tw"><table class="plain">
     <thead><tr><th>증상</th><th>원인과 해결</th></tr></thead>
     <tbody>
-      <tr><td>실행 버튼을 눌러도 아무 일이 없다</td><td>검증에 빨간 오류가 있습니다. <span class="ui">① 모델</span> 오른쪽 검증 칸의 첫 줄을 읽고 그것부터 고칩니다</td></tr>
+      <tr><td>실행 버튼을 눌러도 아무 일이 없다</td><td>검증에 빨간 오류가 있습니다. <span class="ui">① 모델</span> 오른쪽 검증 칸에서 오류 메시지의 <span class="ui">해당 항목 보기 →</span> 를 누르면 문제가 있는 칸으로 바로 이동합니다. 그 칸은 붉게 표시돼 있습니다</td></tr>
       <tr><td>“출고 스테이션이 없어 반출 불가”</td><td>존을 나눴는데 그 존 안에 출고구가 없습니다. 존 범위를 넓히거나 그쪽에 출고 스테이션을 추가합니다</td></tr>
       <tr><td>“존 중첩”</td><td>크레인 두 대의 x·y 범위가 겹칩니다. 경계값을 맞춰 딱 붙게 하되 겹치지는 않게 합니다</td></tr>
       <tr><td>결과가 갑자기 사라졌다</td><td>입력을 고치면 이전 결과를 지웁니다. 다시 <span class="ui">단일 실행</span> 하시면 됩니다</td></tr>

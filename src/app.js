@@ -52,15 +52,68 @@
     try { const sc = JSON.parse($('jsonEd').value); if (!sc || typeof sc !== 'object') throw new Error('객체가 아닙니다'); setScenario(sc); }
     catch (e) { alert('JSON 오류: ' + e.message); }
   }
+  /* ---- 지적 사항 → 해당 입력 칸 표시·이동 ---- */
+  const LEVEL_CLASS = { error: 'err', warn: 'warn', info: 'info' };
+  function targetEls(t) {
+    if (!t) return [];
+    if (t.type === 'field') { const el = $('f_' + t.path.replace(/\./g, '_')); return el ? [el] : []; }
+    if (t.type === 'station' || t.type === 'crane') {
+      const row = document.querySelector(`#${t.type === 'station' ? 'stTable' : 'crTable'} tr[data-eid="${CSS.escape(t.id)}"]`);
+      if (!row) return [];
+      if (!t.col) return [row];
+      if (t.col === 'zone') return [row, ...row.querySelectorAll('[data-k^="zone."]')];
+      const cell = row.querySelector(`[data-k="${t.col}"]`);
+      return cell ? [row, cell] : [row];
+    }
+    if (t.type === 'craneTable') return [$('crTable')];
+    if (t.type === 'stationTable') return [$('stTable')];
+    if (t.type === 'json') return [$('jsonEd')];
+    return [];
+  }
+  function applyIssueMarks(issues) {
+    document.querySelectorAll('.mk-err,.mk-warn').forEach(el => el.classList.remove('mk-err', 'mk-warn'));
+    for (const it of issues) {
+      if (!it.target || it.level === 'info') continue;
+      const cls = it.level === 'error' ? 'mk-err' : 'mk-warn';
+      for (const el of targetEls(it.target)) {
+        if (cls === 'mk-err') el.classList.remove('mk-warn');
+        else if (el.classList.contains('mk-err')) continue;
+        el.classList.add(cls);
+      }
+    }
+  }
+  function focusIssue(idx) {
+    const it = (App.issues || [])[idx];
+    const els = targetEls(it && it.target);
+    if (!els.length) return;
+    showTab('model');
+    const el = els[els.length - 1];
+    el.scrollIntoView({ block: 'center' });   // 즉시 이동. smooth 는 이동이 중간에 끊기는 경우가 있다
+    const flash = els[0];
+    flash.classList.remove('mk-flash');
+    void flash.offsetWidth;
+    flash.classList.add('mk-flash');
+    if (typeof el.focus === 'function' && /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) el.focus({ preventScroll: true });
+  }
+
   function validateNow() {
     const v = STCValidate.validate(App.sc);
+    App.issues = v.issues;
+    const nErr = v.errors.length, nWarn = v.warnings.length;
     let h = '';
-    if (v.ok && !v.warnings.length) h += '<div class="okm">검증 통과 — 오류·경고 없음</div>';
-    else if (v.ok) h += '<div class="okm">검증 통과 (경고 ' + v.warnings.length + '건)</div>';
-    for (const e of v.errors) h += '<div class="err">' + esc(e) + '</div>';
-    for (const w of v.warnings) h += '<div class="warn">' + esc(w) + '</div>';
-    for (const i of v.info) h += '<div class="info">' + esc(i) + '</div>';
+    if (v.ok && !nWarn) h += '<div class="okm">검증 통과 — 오류·경고 없음</div>';
+    else if (v.ok) h += '<div class="okm">검증 통과 (경고 ' + nWarn + '건) — 실행할 수 있습니다</div>';
+    else h += '<div class="errhead">오류 ' + nErr + '건 — 고쳐야 실행됩니다' + (nWarn ? ' (경고 ' + nWarn + '건)' : '') + '</div>';
+    v.issues.forEach((it, i) => {
+      const cls = LEVEL_CLASS[it.level];
+      const can = targetEls(it.target).length > 0;
+      h += can
+        ? `<button type="button" class="${cls} jump" data-issue="${i}">${esc(it.msg)}<span class="go">해당 항목 보기 →</span></button>`
+        : `<div class="${cls}">${esc(it.msg)}</div>`;
+    });
     $('valMsgs').innerHTML = h;
+    $('valMsgs').querySelectorAll('[data-issue]').forEach(b => b.addEventListener('click', () => focusIssue(+b.dataset.issue)));
+    applyIssueMarks(v.issues);
     const bt = $('balTable');
     if (v.balance && v.balance.length) {
       bt.innerHTML = '<tr><th class="l">존(크레인)</th><th>셀</th><th class="l">스테이션</th><th>입고 건/h</th><th>출고 건/h</th><th>수지</th><th>초기 재고</th></tr>' +
@@ -149,7 +202,7 @@
     let h = '<tr><th>id</th><th>이름</th><th>종류</th><th>x m</th><th>y m</th><th>용량</th><th>도착</th><th>건/h</th><th>편차%</th><th>minStock</th><th>반출</th><th></th></tr>';
     App.sc.stations.forEach((s, i) => {
       const ar = s.arrival || (s.arrival = { type: 'takt', ratePerHour: 0, jitterPct: 0 });
-      h += `<tr data-i="${i}">
+      h += `<tr data-i="${i}" data-eid="${esc(s.id)}">
         <td><input type="text" data-k="id" value="${esc(s.id)}" style="width:62px"></td>
         <td><input type="text" data-k="name" value="${esc(s.name || '')}" style="width:120px"></td>
         <td><select data-k="kind"><option value="in"${s.kind === 'in' ? ' selected' : ''}>입고</option><option value="out"${s.kind === 'out' ? ' selected' : ''}>출고</option></select></td>
@@ -186,7 +239,7 @@
     const stOpts = (sel) => '<option value="">(없음)</option>' + App.sc.stations.map(s => `<option value="${esc(s.id)}"${s.id === sel ? ' selected' : ''}>${esc(s.id)}</option>`).join('');
     let h = '<tr><th>id</th><th>x 시작</th><th>x 끝</th><th>y 시작</th><th>y 끝</th><th>home</th><th>x0</th><th>y0</th><th></th></tr>';
     App.sc.cranes.forEach((c, i) => {
-      h += `<tr data-i="${i}">
+      h += `<tr data-i="${i}" data-eid="${esc(c.id)}">
         <td><input type="text" data-k="id" value="${esc(c.id)}" style="width:64px"></td>
         <td><input type="number" data-k="zone.x.0" value="${c.zone.x[0]}" step="0.1" style="width:64px"></td>
         <td><input type="number" data-k="zone.x.1" value="${c.zone.x[1]}" step="0.1" style="width:64px"></td>
